@@ -1,17 +1,17 @@
 package minesweeper;
 import java.util.Stack;
 
-public class UndoManager {
-    private static UndoManager instance;
+public class CommandManager {
+    private static CommandManager instance;
     private Stack<ICommand> commandHistory;
 
-    private UndoManager() {
+    private CommandManager() {
         commandHistory = new Stack<>();
     }
 
-    public static UndoManager Instance() {
+    public static CommandManager Instance() {
         if (instance == null) {
-            instance = new UndoManager();
+            instance = new CommandManager();
         }
         return instance;
     }
