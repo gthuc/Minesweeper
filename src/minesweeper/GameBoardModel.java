@@ -6,16 +6,22 @@ import java.util.List;
 import java.util.Queue;
 
 public class GameBoardModel implements IGameBoardSubject {
-    private CellModel[][] cells;
+    
+    // --- Fields & Properties ---
 
+    private CellModel[][] cells;
     private boolean isFirstClick = true;
     private int totalMines;
+    private ICellFactory factory;
 
     private List<IGameBoardObserver> observers = new ArrayList<>();
 
     // --- Initialization ---
 
-    public GameBoardModel() {}
+    public GameBoardModel(ICellFactory factory) 
+    {
+        this.factory = factory;
+    }
 
     public void Initialize(int size, int totalMines)
     {
@@ -187,6 +193,13 @@ public class GameBoardModel implements IGameBoardSubject {
 
     private boolean isValidCoordinate(int x, int y) {
         return cells != null && x >= 0 && x < cells.length && y >= 0 && y < cells[0].length;
+    }
+
+    // --- Getter ---
+
+    public int getSize() 
+    {
+        return cells.length;
     }
 
     // --- IGameBoardSubject Implements ---

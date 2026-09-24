@@ -6,6 +6,8 @@ public class GameManager {
     private GameBoardModel gameBoard;
     private GameStatus gameStatus;
     private DifficultyLevel difficultyLevel;
+    private IGameState currentState;
+    private boolean isHintUsed;
     private int size; 
     private int mineCount;
 
@@ -42,8 +44,9 @@ public class GameManager {
                 mineCount = 15;
                 break;
         }
-
-        gameBoard = new GameBoardModel();
+        
+        ICellFactory factory = new StandardBoardFactory();
+        gameBoard = new GameBoardModel(factory);
         gameBoard.Initialize(size, mineCount);
         
         System.out.println("Game Started! Difficulty: " + difficulty);
@@ -60,14 +63,13 @@ public class GameManager {
     }
 
     public void HandleCellAction(ICommand command) {
-        if (gameStatus != GameStatus.Playing) {
-            return; 
+        if(currentState != null)
+        {
+            currentState.HandleCommand(this, command);
         }
-        CommandManager.Instance().ExecuteCommand(command);
-        CheckWinCondition();
     }
 
-    private void CheckWinCondition() {
+    public void CheckWinCondition() {
         int revealedSafeCellsCount = 0;
         int revealedMinesCount = 0;
         int safeCellsCount = (size * size) - mineCount;
@@ -95,6 +97,11 @@ public class GameManager {
         else if (revealedMinesCount > 0 && gameStatus == GameStatus.Playing) {
             System.out.println("Watch out! You have" + (3 - revealedMinesCount) + " lives remaining.");
         }
+    }
+
+    public void setHintUsed(boolean used)
+    {
+        this.isHintUsed = used;
     }
 
     public GameStatus getGameStatus() {
