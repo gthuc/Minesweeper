@@ -4,23 +4,15 @@ public class PlayingState implements IGameState {
     @Override
     public void HandleCommand(GameManager context, ICommand command) {
         CommandManager.Instance().ExecuteCommand(command);
-        context.CheckWinCondition();
+        context.CheckWinCondition(); // có thể chuyển sang InactiveState
     }
 
     @Override
     public HintResult UseHint(GameManager context) {
-        context.setHintUsed(true);
-
-        GameBoardModel board = context.getGameBoard();
-        HintSystem hintSystem = HintSystem.Instance();
-        hintSystem.setStrategy(new SafeHintStrategy());
-        HintResult result = hintSystem.GetHint(board);
-
-        if (result == null) {
-            hintSystem.setStrategy(new IntelligentHintStrategy());
-            result = hintSystem.GetHint(board);
+        HintResult result = HintSystem.Instance().GetHint(context.getGameBoard());
+        if (result != null) {
+            context.setHintUsed(true); // chỉ đánh dấu khi thực sự có gợi ý
         }
-
         return result;
+    }
 }
-}   

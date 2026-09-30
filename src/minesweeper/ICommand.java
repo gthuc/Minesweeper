@@ -1,6 +1,7 @@
 package minesweeper;
 
 public interface ICommand {
-    public void Execute();
-    public void Undo();
+    /** @return true nếu lệnh thực sự thay đổi bàn cờ (mới được đưa vào history). */
+    boolean Execute();
+    void Undo();
 }

@@ -1,12 +1,16 @@
 package minesweeper;
 
+import java.util.ArrayList;
+import java.util.List;
+
+/** Chuỗi chiến lược: thử lần lượt cho tới khi có strategy trả về gợi ý. */
 public class HintSystem {
     private static HintSystem instance;
-    private IHintStrategy currentStrategy;
+    private final List<IHintStrategy> strategies = new ArrayList<>();
 
     private HintSystem() {
-        // Gắn mặc định một chiến lược khi khởi tạo
-        this.currentStrategy = new SafeHintStrategy(); 
+        strategies.add(new SafeHintStrategy());
+        strategies.add(new IntelligentHintStrategy());
     }
 
     public static HintSystem Instance() {
@@ -16,14 +20,11 @@ public class HintSystem {
         return instance;
     }
 
-    // Hàm cho phép đổi thuật toán linh hoạt ngay trong lúc chơi
-    public void setStrategy(IHintStrategy strategy) {
-        this.currentStrategy = strategy;
-    }
-
-    // Hàm này sẽ được GameManager hoặc PlayingState gọi
     public HintResult GetHint(GameBoardModel board) {
-        if (currentStrategy == null) return null;
-        return currentStrategy.GetHintPosition(board);
+        for (IHintStrategy strategy : strategies) {
+            HintResult result = strategy.GetHintPosition(board);
+            if (result != null) return result;
+        }
+        return null;
     }
 }
