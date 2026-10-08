@@ -1,0 +1,173 @@
+Index: src/controller/Main.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package controller;\n\nimport command.FlagCommand;\nimport command.RevealCommand;\nimport factory.StandardBoardFactory;\nimport factory.ThemeBoardFactory;\nimport hint.HintResult;\nimport model.DifficultyLevel;\nimport model.GameStatus;\nimport storage.LeaderboardManager;\nimport storage.ScoreRecord;\nimport view.ConsoleView;\n\nimport java.util.List;\nimport java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        GameManager gm = GameManager.getInstance();\n        ConsoleView view = new ConsoleView();\n        gm.registerBoardObserver(view);\n\n        boolean theme = false;\n        printHelp();\n        gm.startGame(DifficultyLevel.EASY);\n        view.render(gm);\n\n        Scanner in = new Scanner(System.in);\n        while (true) {\n            System.out.print(\"> \");\n            if (!in.hasNextLine()) break;\n            String line = in.nextLine().trim();\n            if (line.isEmpty()) continue;\n\n            String[] t = line.split(\"\\\\s+\");\n            String cmd = t[0].toLowerCase();\n            boolean redraw = true;\n\n            try {\n                switch (cmd) {\n                    case \"r\":\n                    case \"f\":\n                        requirePlaying(gm);\n                        if (t.length < 3) throw new IllegalArgumentException(\"Cú pháp: \" + cmd + \" <hàng> <cột>\");\n                        int x = Integer.parseInt(t[1]);\n                        int y = Integer.parseInt(t[2]);\n                        gm.handleCellAction(cmd.equals(\"r\")\n                                ? new RevealCommand(gm.getGameBoard(), x, y)\n                                : new FlagCommand(gm.getGameBoard(), x, y));\n                        break;\n                    case \"u\":\n                        gm.undo();\n                        break;\n                    case \"h\":\n                        printHint(gm.useHint());\n                        redraw = false;\n                        break;\n                    case \"p\":\n                        if (gm.getGameStatus() == GameStatus.Paused) gm.resume(); else gm.pause();\n                        break;\n                    case \"n\":\n                        gm.setCellFactory(theme ? new ThemeBoardFactory() : new StandardBoardFactory());\n                        startNewGame(gm, t);\n                        break;\n                    case \"t\":\n                        theme = !theme;\n                        System.out.println(\"Giao diện \" + (theme ? \"Theme\" : \"Classic\") + \" sẽ áp dụng từ ván mới.\");\n                        redraw = false;\n                        break;\n                    case \"name\":\n                        gm.setPlayerName(line.substring(4));\n                        System.out.println(\"Tên người chơi: \" + gm.getPlayerName());\n                        redraw = false;\n                        break;\n                    case \"l\":\n                        printLeaderboard();\n                        redraw = false;\n                        break;\n                    case \"q\":\n                        return;\n                    default:\n                        printHelp();\n                        redraw = false;\n                }\n            } catch (NumberFormatException e) {\n                System.out.println(\"Tọa độ phải là số nguyên.\");\n                redraw = false;\n            } catch (IllegalArgumentException | IllegalStateException e) {\n                System.out.println(e.getMessage());\n                redraw = false;\n            }\n\n            if (redraw || view.consumeDirty()) {\n                view.consumeDirty();\n                view.render(gm);\n            }\n        }\n    }\n\n    private static void requirePlaying(GameManager gm) {\n        if (gm.getGameStatus() != GameStatus.Playing) {\n            throw new IllegalStateException(\"Ván chơi không ở trạng thái đang chơi (gõ 'n' để ván mới, 'p' để tiếp tục).\");\n        }\n    }\n\n    private static void startNewGame(GameManager gm, String[] t) {\n        String level = t.length > 1 ? t[1].toUpperCase() : \"EASY\";\n        DifficultyLevel d;\n        try {\n            d = DifficultyLevel.valueOf(level);\n        } catch (IllegalArgumentException e) {\n            throw new IllegalArgumentException(\"Độ khó phải là easy | medium | hard | custom <size> <mines>\");\n        }\n        if (d == DifficultyLevel.CUSTOM) {\n            if (t.length < 4) throw new IllegalArgumentException(\"Cú pháp: n custom <size 5-30> <mines>\");\n            gm.startGame(d, Integer.parseInt(t[2]), Integer.parseInt(t[3]));\n        } else {\n            gm.startGame(d);\n        }\n    }\n\n    private static void printHint(HintResult h) {\n        if (h == null) {\n            System.out.println(\"Không có gợi ý (ván chưa chơi hoặc đã kết thúc).\");\n            return;\n        }\n        String meaning;\n        switch (h.getType()) {\n            case CERTAIN_SAFE: meaning = \"CHẮC CHẮN AN TOÀN\"; break;\n            case CERTAIN_MINE: meaning = \"CHẮC CHẮN LÀ MÌN\"; break;\n            default:           meaning = \"ít rủi ro nhất (chỉ là ước lượng)\";\n        }\n        System.out.println(\"Gợi ý: ô (\" + h.getX() + \", \" + h.getY() + \") \" + meaning);\n    }\n\n    private static void printLeaderboard() {\n        for (DifficultyLevel level : DifficultyLevel.values()) {\n            if (level == DifficultyLevel.CUSTOM) continue;\n            List<ScoreRecord> top = LeaderboardManager.getInstance().getTopScores(level);\n            System.out.println(\"== \" + level + \" ==\");\n            if (top.isEmpty()) System.out.println(\"  (trống)\");\n            for (int i = 0; i < top.size(); i++) System.out.println(\"  \" + (i + 1) + \". \" + top.get(i));\n        }\n    }\n\n    private static void printHelp() {\n        System.out.println(\"Lệnh: r <hàng> <cột> (lật) | f <hàng> <cột> (cờ) | u (undo) | h (gợi ý) | p (tạm dừng/tiếp tục)\");\n        System.out.println(\"      n [easy|medium|hard|custom <size> <mines>] (ván mới) | t (đổi giao diện)\");\n        System.out.println(\"      name <tên> | l (bảng điểm) | q (thoát)\");\n    }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/controller/Main.java b/src/controller/Main.java
+--- a/src/controller/Main.java	(revision a99ab770100e03b2d76c5ae5229d7a40548156df)
++++ b/src/controller/Main.java	(date 1791308862045)
+@@ -1,151 +1,21 @@
+ package controller;
+ 
+-import command.FlagCommand;
+-import command.RevealCommand;
+-import factory.StandardBoardFactory;
+-import factory.ThemeBoardFactory;
+-import hint.HintResult;
++import ui.GameFrame;
++import javax.swing.SwingUtilities;
+ import model.DifficultyLevel;
+-import model.GameStatus;
+-import storage.LeaderboardManager;
+-import storage.ScoreRecord;
+-import view.ConsoleView;
+-
+-import java.util.List;
+-import java.util.Scanner;
+ 
+ public class Main {
+     public static void main(String[] args) {
++        // 1. Lấy phiên bản GameManager duy nhất (Singleton)
+         GameManager gm = GameManager.getInstance();
+-        ConsoleView view = new ConsoleView();
+-        gm.registerBoardObserver(view);
+ 
+-        boolean theme = false;
+-        printHelp();
++        // 2. Khởi tạo dữ liệu một ván game mặc định (Mức Dễ)
+         gm.startGame(DifficultyLevel.EASY);
+-        view.render(gm);
+-
+-        Scanner in = new Scanner(System.in);
+-        while (true) {
+-            System.out.print("> ");
+-            if (!in.hasNextLine()) break;
+-            String line = in.nextLine().trim();
+-            if (line.isEmpty()) continue;
+-
+-            String[] t = line.split("\\s+");
+-            String cmd = t[0].toLowerCase();
+-            boolean redraw = true;
+-
+-            try {
+-                switch (cmd) {
+-                    case "r":
+-                    case "f":
+-                        requirePlaying(gm);
+-                        if (t.length < 3) throw new IllegalArgumentException("Cú pháp: " + cmd + " <hàng> <cột>");
+-                        int x = Integer.parseInt(t[1]);
+-                        int y = Integer.parseInt(t[2]);
+-                        gm.handleCellAction(cmd.equals("r")
+-                                ? new RevealCommand(gm.getGameBoard(), x, y)
+-                                : new FlagCommand(gm.getGameBoard(), x, y));
+-                        break;
+-                    case "u":
+-                        gm.undo();
+-                        break;
+-                    case "h":
+-                        printHint(gm.useHint());
+-                        redraw = false;
+-                        break;
+-                    case "p":
+-                        if (gm.getGameStatus() == GameStatus.Paused) gm.resume(); else gm.pause();
+-                        break;
+-                    case "n":
+-                        gm.setCellFactory(theme ? new ThemeBoardFactory() : new StandardBoardFactory());
+-                        startNewGame(gm, t);
+-                        break;
+-                    case "t":
+-                        theme = !theme;
+-                        System.out.println("Giao diện " + (theme ? "Theme" : "Classic") + " sẽ áp dụng từ ván mới.");
+-                        redraw = false;
+-                        break;
+-                    case "name":
+-                        gm.setPlayerName(line.substring(4));
+-                        System.out.println("Tên người chơi: " + gm.getPlayerName());
+-                        redraw = false;
+-                        break;
+-                    case "l":
+-                        printLeaderboard();
+-                        redraw = false;
+-                        break;
+-                    case "q":
+-                        return;
+-                    default:
+-                        printHelp();
+-                        redraw = false;
+-                }
+-            } catch (NumberFormatException e) {
+-                System.out.println("Tọa độ phải là số nguyên.");
+-                redraw = false;
+-            } catch (IllegalArgumentException | IllegalStateException e) {
+-                System.out.println(e.getMessage());
+-                redraw = false;
+-            }
+-
+-            if (redraw || view.consumeDirty()) {
+-                view.consumeDirty();
+-                view.render(gm);
+-            }
+-        }
+-    }
+-
+-    private static void requirePlaying(GameManager gm) {
+-        if (gm.getGameStatus() != GameStatus.Playing) {
+-            throw new IllegalStateException("Ván chơi không ở trạng thái đang chơi (gõ 'n' để ván mới, 'p' để tiếp tục).");
+-        }
+-    }
+-
+-    private static void startNewGame(GameManager gm, String[] t) {
+-        String level = t.length > 1 ? t[1].toUpperCase() : "EASY";
+-        DifficultyLevel d;
+-        try {
+-            d = DifficultyLevel.valueOf(level);
+-        } catch (IllegalArgumentException e) {
+-            throw new IllegalArgumentException("Độ khó phải là easy | medium | hard | custom <size> <mines>");
+-        }
+-        if (d == DifficultyLevel.CUSTOM) {
+-            if (t.length < 4) throw new IllegalArgumentException("Cú pháp: n custom <size 5-30> <mines>");
+-            gm.startGame(d, Integer.parseInt(t[2]), Integer.parseInt(t[3]));
+-        } else {
+-            gm.startGame(d);
+-        }
+-    }
+-
+-    private static void printHint(HintResult h) {
+-        if (h == null) {
+-            System.out.println("Không có gợi ý (ván chưa chơi hoặc đã kết thúc).");
+-            return;
+-        }
+-        String meaning;
+-        switch (h.getType()) {
+-            case CERTAIN_SAFE: meaning = "CHẮC CHẮN AN TOÀN"; break;
+-            case CERTAIN_MINE: meaning = "CHẮC CHẮN LÀ MÌN"; break;
+-            default:           meaning = "ít rủi ro nhất (chỉ là ước lượng)";
+-        }
+-        System.out.println("Gợi ý: ô (" + h.getX() + ", " + h.getY() + ") " + meaning);
+-    }
+ 
+-    private static void printLeaderboard() {
+-        for (DifficultyLevel level : DifficultyLevel.values()) {
+-            if (level == DifficultyLevel.CUSTOM) continue;
+-            List<ScoreRecord> top = LeaderboardManager.getInstance().getTopScores(level);
+-            System.out.println("== " + level + " ==");
+-            if (top.isEmpty()) System.out.println("  (trống)");
+-            for (int i = 0; i < top.size(); i++) System.out.println("  " + (i + 1) + ". " + top.get(i));
+-        }
++        // 3. Khởi động giao diện đồ họa (GUI)
++        SwingUtilities.invokeLater(() -> {
++            GameFrame frame = new GameFrame(gm);
++            frame.setVisible(true);
++        });
+     }
+-
+-    private static void printHelp() {
+-        System.out.println("Lệnh: r <hàng> <cột> (lật) | f <hàng> <cột> (cờ) | u (undo) | h (gợi ý) | p (tạm dừng/tiếp tục)");
+-        System.out.println("      n [easy|medium|hard|custom <size> <mines>] (ván mới) | t (đổi giao diện)");
+-        System.out.println("      name <tên> | l (bảng điểm) | q (thoát)");
+-    }
+-}
++}
+\ No newline at end of file
