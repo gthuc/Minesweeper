@@ -26,6 +26,7 @@ public class BoardPanel extends JPanel implements IGameBoardObserver {
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
                 cellButtons[i][j] = new CellButton(i, j);
+                cellButtons[i][j].setMargin(new Insets(0, 0, 0, 0));
                 final int r = i;
                 final int c = j;
 
@@ -70,13 +71,13 @@ public class BoardPanel extends JPanel implements IGameBoardObserver {
             SwingUtilities.invokeLater(() -> {
                 if (status == GameStatus.Lost) {
                     JOptionPane.showMessageDialog(this,
-                            "Game Over! Bạn đã hết mạng (chạm quá 3 quả mìn).",
-                            "Thất bại",
+                            "Game Over! You have run out of lives (hit too many mines).",
+                            "Defeat",
                             JOptionPane.ERROR_MESSAGE);
                 } else {
                     JOptionPane.showMessageDialog(this,
-                            "Xuất sắc! Bạn đã quét sạch bãi mìn thành công!",
-                            "Chiến thắng",
+                            "Excellent! You have successfully cleared the minefield!",
+                            "Victory",
                             JOptionPane.INFORMATION_MESSAGE);
                 }
             });

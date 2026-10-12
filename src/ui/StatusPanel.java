@@ -22,10 +22,10 @@ public class StatusPanel extends JPanel implements IGameBoardObserver {
 
         Font font = new Font("Arial", Font.BOLD, 16);
 
-        minesLabel = new JLabel("Mìn: " + gameManager.getGameBoard().getTotalMines(), SwingConstants.CENTER);
+        minesLabel = new JLabel("Mines: " + gameManager.getGameBoard().getTotalMines(), SwingConstants.CENTER);
         minesLabel.setFont(font);
 
-        timeLabel = new JLabel("Thời gian: 00:00", SwingConstants.CENTER);
+        timeLabel = new JLabel("Time: 00:00", SwingConstants.CENTER);
         timeLabel.setFont(font);
 
         add(minesLabel);
@@ -39,7 +39,7 @@ public class StatusPanel extends JPanel implements IGameBoardObserver {
                 long elapsed = gameManager.getElapsedSeconds();
                 int minutes = (int) (elapsed / 60);
                 int seconds = (int) (elapsed % 60);
-                timeLabel.setText(String.format("Thời gian: %02d:%02d", minutes, seconds));
+                timeLabel.setText(String.format("Time: %02d:%02d", minutes, seconds));
             }
         });
     }
@@ -49,7 +49,7 @@ public class StatusPanel extends JPanel implements IGameBoardObserver {
         // Cập nhật số mìn còn lại
         if (gameManager.getGameBoard() != null) {
             int remaining = gameManager.getGameBoard().getRemainingMines();
-            minesLabel.setText("Mìn: " + remaining);
+            minesLabel.setText("Mines: " + remaining);
         }
 
         // Kiểm soát trạng thái đồng hồ dựa theo GameStatus của GameManager
@@ -67,7 +67,7 @@ public class StatusPanel extends JPanel implements IGameBoardObserver {
             long elapsed = gameManager.getElapsedSeconds();
             int minutes = (int) (elapsed / 60);
             int seconds = (int) (elapsed % 60);
-            timeLabel.setText(String.format("Thời gian: %02d:%02d", minutes, seconds));
+            timeLabel.setText(String.format("Time: %02d:%02d", minutes, seconds));
         }
     }
 }
