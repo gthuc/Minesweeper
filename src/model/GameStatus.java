@@ -1,9 +1,9 @@
 package model;
 
 public enum GameStatus {
-    NotStarted,
-    Playing,
-    Won,
-    Lost,
-    Paused
+    NOT_STARTED,   // chưa có ván nào (đang ở menu)
+    PLAYING,
+    WON,
+    LOST,
+    PAUSED
 }

@@ -4,6 +4,7 @@ import controller.GameManager;
 import model.CellModel;
 import model.GameBoardModel;
 import model.GameStatus;
+import observer.BoardEvent;
 import observer.IGameBoardObserver;
 
 /** Giao diện dòng lệnh. Là Observer: bàn cờ đổi thì đánh dấu cần vẽ lại. */
@@ -11,7 +12,7 @@ public class ConsoleView implements IGameBoardObserver {
     private boolean dirty;
 
     @Override
-    public void onBoardChange(Object eventData) {
+    public void onBoardChange(BoardEvent event) {
         dirty = true;
     }
 
@@ -24,7 +25,7 @@ public class ConsoleView implements IGameBoardObserver {
     public void render(GameManager gm) {
         GameBoardModel board = gm.getGameBoard();
         if (board == null) {
-            System.out.println("Chưa có ván nào. Gõ 'n' để bắt đầu.");
+            System.out.println("Đang ở menu.");
             return;
         }
 
@@ -35,12 +36,12 @@ public class ConsoleView implements IGameBoardObserver {
                 + " | Mạng: " + gm.getLivesRemaining()
                 + " | Mìn còn lại: " + board.getRemainingMines());
 
-        if (status == GameStatus.Paused) {
+        if (status == GameStatus.PAUSED) {
             System.out.println("*** TẠM DỪNG - gõ 'p' để tiếp tục ***");
             return;
         }
 
-        boolean showMines = status == GameStatus.Lost;
+        boolean showMines = status == GameStatus.LOST;
         int n = board.getSize();
 
         StringBuilder sb = new StringBuilder("    ");

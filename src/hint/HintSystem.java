@@ -1,5 +1,6 @@
 package hint;
 
+import model.CellModel;
 import model.GameBoardModel;
 
 import java.util.ArrayList;
@@ -28,13 +29,20 @@ public class HintSystem {
         // Chưa click lần đầu: mìn chưa được sinh, và ô đầu tiên luôn an toàn.
         if (!board.isMinesGenerated()) {
             int mid = board.getSize() / 2;
-            return new HintResult(mid, mid, HintType.CERTAIN_SAFE);
+            return annotate(board, new HintResult(mid, mid, HintType.CERTAIN_SAFE));
         }
 
         for (IHintStrategy strategy : strategies) {
             HintResult result = strategy.getHintPosition(board);
-            if (result != null) return result;
+            if (result != null) return annotate(board, result);
         }
         return null;
+    }
+
+    /** Gắn thông tin "ô này đang có cờ" để UI nhắc gỡ cờ. */
+    private HintResult annotate(GameBoardModel board, HintResult r) {
+        CellModel cell = board.getCell(r.getX(), r.getY());
+        boolean flagged = cell != null && cell.isFlagged();
+        return flagged == r.isOnFlaggedCell() ? r : new HintResult(r.getX(), r.getY(), r.getType(), flagged);
     }
 }

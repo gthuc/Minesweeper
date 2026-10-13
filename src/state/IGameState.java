@@ -13,7 +13,8 @@ public interface IGameState {
 
     default HintResult useHint(GameManager context) { return null; }
 
-    default void undo(GameManager context) {}
+    /** @return true nếu có thay đổi được hoàn tác. */
+    default boolean undo(GameManager context) { return false; }
 
     default void pause(GameManager context) {}
 

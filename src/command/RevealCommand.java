@@ -26,10 +26,8 @@ public class RevealCommand implements ICommand {
     }
 
     @Override
-    public void undo() {
-        if (affectedCoords != null && !affectedCoords.isEmpty()) {
-            board.undoReveal(affectedCoords);
-        }
+    public boolean undo() {
+        return affectedCoords != null && !affectedCoords.isEmpty() && board.undoReveal(affectedCoords);
     }
 
     /** Trúng mìn là mất mạng vĩnh viễn, không được undo để "lấy lại mạng". */

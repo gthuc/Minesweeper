@@ -23,14 +23,20 @@ public class CommandManager {
         }
     }
 
-    /** @return true nếu có lệnh được hoàn tác. */
+    /**
+     * Hoàn tác lệnh gần nhất THỰC SỰ có tác dụng. Lệnh nào undo mà không đổi gì
+     * (vd: ô đó sau đó đã nổ mìn) bị bỏ qua để người chơi không bấm undo "vô hình".
+     *
+     * @return true nếu có thay đổi nào được hoàn tác.
+     */
     public synchronized boolean undo() {
-        if (history.isEmpty()) return false;
-        history.pop().undo();
-        return true;
+        while (!history.isEmpty()) {
+            if (history.pop().undo()) return true;
+        }
+        return false;
     }
 
-    /** Gọi khi bắt đầu ván mới để Undo không tác động lên bàn cờ cũ. */
+    /** Gọi khi bắt đầu ván mới / về menu để Undo không tác động lên bàn cờ cũ. */
     public synchronized void clear() {
         history.clear();
     }

@@ -6,7 +6,7 @@ import model.GameStatus;
 /** Tạm dừng: bỏ qua mọi lệnh, timer đã được GameManager đóng băng khi chuyển state. */
 public class PausedState implements IGameState {
     @Override
-    public GameStatus getStatus() { return GameStatus.Paused; }
+    public GameStatus getStatus() { return GameStatus.PAUSED; }
 
     @Override
     public void resume(GameManager context) {

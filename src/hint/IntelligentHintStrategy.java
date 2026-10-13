@@ -12,6 +12,8 @@ import java.util.Map;
  * và đề xuất ô ít rủi ro nhất.
  *  - Ô nằm cạnh ô số: trung bình (mìn còn lại / số ô chưa biết) của các ô số kề nó.
  *  - Ô không kề ô số nào: mật độ mìn trung bình của phần bàn cờ chưa lật.
+ * Ưu tiên ô chưa cắm cờ; chỉ khi MỌI ô chưa lật đều đã cắm cờ (nghĩa là có cờ sai)
+ * mới gợi ý một ô đang có cờ.
  */
 public class IntelligentHintStrategy implements IHintStrategy {
 
@@ -36,19 +38,27 @@ public class IntelligentHintStrategy implements IHintStrategy {
 
         HintResult best = null;
         double bestProb = Double.MAX_VALUE;
+        HintResult bestFlagged = null;
+        double bestFlaggedProb = Double.MAX_VALUE;
+
         for (int x = 0; x < size; x++) {
             for (int y = 0; y < size; y++) {
                 CellModel cell = board.getCell(x, y);
-                if (cell.isRevealed() || cell.isFlagged()) continue;
+                if (cell.isRevealed()) continue;
 
                 double[] s = sums.get(x * size + y);
                 double prob = (s == null) ? globalDensity : s[0] / s[1];
-                if (prob < bestProb) {
+                if (cell.isFlagged()) {
+                    if (prob < bestFlaggedProb) {
+                        bestFlaggedProb = prob;
+                        bestFlagged = new HintResult(x, y, HintType.PROBABLE, true);
+                    }
+                } else if (prob < bestProb) {
                     bestProb = prob;
                     best = new HintResult(x, y, HintType.PROBABLE);
                 }
             }
         }
-        return best;
+        return best != null ? best : bestFlagged;
     }
 }

@@ -18,7 +18,7 @@ public class FlagCommand implements ICommand {
     }
 
     @Override
-    public void undo() {
-        board.toggleFlag(x, y);
+    public boolean undo() {
+        return board.toggleFlag(x, y);
     }
 }

@@ -5,5 +5,5 @@ public interface IGameBoardSubject {
 
     void removeObserver(IGameBoardObserver observer);
 
-    void notifyObservers(Object eventData);
+    void notifyObservers(BoardEvent event);
 }

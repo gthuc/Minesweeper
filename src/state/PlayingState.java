@@ -5,11 +5,12 @@ import command.ICommand;
 import controller.GameManager;
 import hint.HintResult;
 import hint.HintSystem;
+import model.GameBoardModel;
 import model.GameStatus;
 
 public class PlayingState implements IGameState {
     @Override
-    public GameStatus getStatus() { return GameStatus.Playing; }
+    public GameStatus getStatus() { return GameStatus.PLAYING; }
 
     @Override
     public void handleCommand(GameManager context, ICommand command) {
@@ -19,16 +20,19 @@ public class PlayingState implements IGameState {
 
     @Override
     public HintResult useHint(GameManager context) {
-        HintResult result = HintSystem.getInstance().getHint(context.getGameBoard());
-        if (result != null) {
-            context.setHintUsed(true); // chỉ đánh dấu khi thực sự có gợi ý
+        GameBoardModel board = context.getGameBoard();
+        HintResult result = HintSystem.getInstance().getHint(board);
+        // Chỉ tính là "đã dùng gợi ý" khi gợi ý thật sự dựa trên bàn cờ. Trước click đầu
+        // gợi ý chỉ là "click vào giữa", không đáng bị phạt thứ hạng.
+        if (result != null && board != null && board.isMinesGenerated()) {
+            context.setHintUsed(true);
         }
         return result;
     }
 
     @Override
-    public void undo(GameManager context) {
-        CommandManager.getInstance().undo();
+    public boolean undo(GameManager context) {
+        return CommandManager.getInstance().undo();
     }
 
     @Override

@@ -1,6 +1,7 @@
 package model;
 
 import factory.ICellFactory;
+import observer.BoardEvent;
 import observer.IGameBoardObserver;
 import observer.IGameBoardSubject;
 
@@ -71,32 +72,33 @@ public class GameBoardModel implements IGameBoardSubject {
         return result;
     }
 
-    public int getSize() { return cells.length; }
+    /** 0 nếu chưa initialize. */
+    public int getSize() { return cells == null ? 0 : cells.length; }
     public int getTotalMines() { return totalMines; }
     public int getFlagCount() { return flagCount; }
     public int getRevealedSafeCount() { return revealedSafeCount; }
     public int getRevealedMineCount() { return revealedMineCount; }
     public boolean isMinesGenerated() { return minesGenerated; }
 
-    /** Số mìn ước tính còn lại = tổng mìn - cờ đã cắm - mìn đã nổ. */
+    /** Số mìn ước tính còn lại = tổng mìn - cờ đã cắm - mìn đã nổ (không bao giờ âm). */
     public int getRemainingMines() {
-        return totalMines - flagCount - revealedMineCount;
+        return Math.max(0, totalMines - flagCount - revealedMineCount);
     }
 
     // ---------- Hành động ----------
 
     /**
      * Bật/tắt cờ. Trả về true nếu trạng thái thực sự thay đổi.
-     * Không cho cắm quá số mìn của bàn cờ.
+     * Không cho cắm quá số mìn CÒN LẠI (mìn đã nổ không còn cần cờ).
      */
     public boolean toggleFlag(int x, int y) {
         CellModel cell = getCell(x, y);
         if (cell == null || cell.isRevealed()) return false;
-        if (!cell.isFlagged() && flagCount >= totalMines) return false;
+        if (!cell.isFlagged() && flagCount + revealedMineCount >= totalMines) return false;
 
         cell.setFlagged(!cell.isFlagged());
         flagCount += cell.isFlagged() ? 1 : -1;
-        notifyObservers("FLAG");
+        notifyObservers(BoardEvent.FLAG);
         return true;
     }
 
@@ -119,20 +121,24 @@ public class GameBoardModel implements IGameBoardSubject {
             affected.addAll(floodFill(x, y));
         }
 
-        notifyObservers("REVEAL");
+        notifyObservers(BoardEvent.REVEAL);
         return affected;
     }
 
-    public void undoReveal(List<int[]> affectedCoords) {
-        if (affectedCoords == null || affectedCoords.isEmpty()) return;
+    /** @return true nếu có ô nào thực sự được úp lại. */
+    public boolean undoReveal(List<int[]> affectedCoords) {
+        if (affectedCoords == null || affectedCoords.isEmpty()) return false;
+        boolean changed = false;
         for (int[] c : affectedCoords) {
             CellModel cell = getCell(c[0], c[1]);
             if (cell != null && cell.isRevealed()) {
                 cell.setRevealed(false);
                 if (cell.isMine()) revealedMineCount--; else revealedSafeCount--;
+                changed = true;
             }
         }
-        notifyObservers("UNDO");
+        if (changed) notifyObservers(BoardEvent.UNDO);
+        return changed;
     }
 
     // ---------- Thuật toán ----------
@@ -224,10 +230,10 @@ public class GameBoardModel implements IGameBoardSubject {
     }
 
     @Override
-    public void notifyObservers(Object eventData) {
+    public void notifyObservers(BoardEvent event) {
         // Duyệt trên bản sao để observer có thể tự gỡ đăng ký khi đang được gọi.
         for (IGameBoardObserver observer : new ArrayList<>(observers)) {
-            observer.onBoardChange(eventData);
+            observer.onBoardChange(event);
         }
     }
 }
