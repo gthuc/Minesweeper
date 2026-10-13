@@ -1,73 +1,54 @@
 package ui;
 
 import controller.GameManager;
+import model.GameBoardModel;
+import observer.BoardEvent;
 import observer.IGameBoardObserver;
-import model.GameStatus;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public class StatusPanel extends JPanel implements IGameBoardObserver {
-    private JLabel minesLabel;
-    private JLabel timeLabel;
-    private Timer timer;
-    private int secondsElapsed = 0;
+    private JLabel mineCountLabel;
+    private JLabel timerLabel;
     private GameManager gameManager;
+    private Timer uiTimer; // UI timer for the clock
 
     public StatusPanel(GameManager gameManager) {
         this.gameManager = gameManager;
-        setLayout(new GridLayout(1, 2));
+        setLayout(new FlowLayout(FlowLayout.CENTER, 50, 5));
 
-        Font font = new Font("Arial", Font.BOLD, 16);
+        mineCountLabel = new JLabel("Mines: --");
+        timerLabel = new JLabel("Time: 00:00");
 
-        minesLabel = new JLabel("Mines: " + gameManager.getGameBoard().getTotalMines(), SwingConstants.CENTER);
-        minesLabel.setFont(font);
+        add(mineCountLabel);
+        add(timerLabel);
 
-        timeLabel = new JLabel("Time: 00:00", SwingConstants.CENTER);
-        timeLabel.setFont(font);
+        // Initialize Timer to run every 500ms (0.5s) to update the clock
+        uiTimer = new Timer(500, e -> updateTimerDisplay());
+        uiTimer.start();
+    }
 
-        add(minesLabel);
-        add(timeLabel);
+    private void updateTimerDisplay() {
+        if (gameManager != null) {
+            long seconds = gameManager.getElapsedSeconds();
+            long m = seconds / 60;
+            long s = seconds % 60;
+            timerLabel.setText(String.format("Time: %02d:%02d", m, s));
+        }
+    }
 
-        // Khởi tạo bộ đếm thời gian (1 giây / lần)
-        timer = new Timer(1000, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Lấy thẳng thời gian thực từ GameManager của Thục cho chính xác tuyệt đối
-                long elapsed = gameManager.getElapsedSeconds();
-                int minutes = (int) (elapsed / 60);
-                int seconds = (int) (elapsed % 60);
-                timeLabel.setText(String.format("Time: %02d:%02d", minutes, seconds));
-            }
-        });
+    public void updateStatus() {
+        if (gameManager != null && gameManager.getGameBoard() != null) {
+            GameBoardModel board = gameManager.getGameBoard();
+            int totalMines = board.getTotalMines();
+            int flagCount = board.getFlagCount();
+            mineCountLabel.setText("Mines: " + (totalMines - flagCount));
+        }
     }
 
     @Override
-    public void onBoardChange(Object eventData) {
-        // Cập nhật số mìn còn lại
-        if (gameManager.getGameBoard() != null) {
-            int remaining = gameManager.getGameBoard().getRemainingMines();
-            minesLabel.setText("Mines: " + remaining);
-        }
-
-        // Kiểm soát trạng thái đồng hồ dựa theo GameStatus của GameManager
-        GameStatus status = gameManager.getGameStatus();
-
-        if (status == GameStatus.Playing) {
-            if (!timer.isRunning()) {
-                timer.start();
-            }
-        } else {
-            // Nếu không còn ở trạng thái Playing (Thua, Thắng, Paused...), dừng đồng hồ ngay lập tức!
-            timer.stop();
-
-            // Cập nhật lại chuỗi thời gian lần cuối cho chuẩn xác
-            long elapsed = gameManager.getElapsedSeconds();
-            int minutes = (int) (elapsed / 60);
-            int seconds = (int) (elapsed % 60);
-            timeLabel.setText(String.format("Time: %02d:%02d", minutes, seconds));
-        }
+    public void onBoardChange(BoardEvent event) {
+        updateStatus();
     }
 }

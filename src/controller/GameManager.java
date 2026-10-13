@@ -27,21 +27,20 @@ import java.util.List;
 import java.util.function.LongSupplier;
 
 /**
- * Điểm vào duy nhất của backend. Mọi method public đều synchronized nên có thể gọi
- * an toàn từ nhiều luồng (vd HttpServer). Không in ra màn hình: UI nhận thông báo
- * qua {@link IGameEventListener} và đọc trạng thái qua {@link #getSnapshot()}.
+ * Single entry point for the backend. All public methods are synchronized for thread safety.
+ * UI receives notifications via {@link IGameEventListener} and reads state via {@link #getSnapshot()}.
  */
 public class GameManager {
     public static final int MAX_MINES_HIT = 3;
 
     private static GameManager instance;
 
-    private GameBoardModel gameBoard;       // null = đang ở menu
-    private DifficultyLevel difficultyLevel; // cấu hình ván gần nhất (để restart)
+    private GameBoardModel gameBoard;       // null = at menu
+    private DifficultyLevel difficultyLevel; // last game configuration (for restart)
     private int size;
     private int mineCount;
     private Theme activeTheme = Theme.CLASSIC;
-    private IGameState currentState = new InactiveState(GameStatus.NOT_STARTED); // nguồn trạng thái duy nhất
+    private IGameState currentState = new InactiveState(GameStatus.NOT_STARTED); // single source of truth for state
     private final List<IGameBoardObserver> boardObservers = new ArrayList<>();
     private final List<IGameEventListener> eventListeners = new ArrayList<>();
 
@@ -50,7 +49,7 @@ public class GameManager {
     private ScoreRecord lastRecord;
     private int lastRank;
 
-    // Timer: chỉ chạy khi đang PLAYING và đã click lần đầu. Dùng đồng hồ đơn điệu (nanoTime).
+    // Timer: runs only during PLAYING state after first click. Uses monotonic clock (nanoTime).
     private LongSupplier clock = System::nanoTime;
     private boolean timerStarted;
     private boolean running;
@@ -66,9 +65,9 @@ public class GameManager {
         return instance;
     }
 
-    // ---------- Menu / bắt đầu / kết thúc ----------
+    // ---------- Menu / Start / End ----------
 
-    /** Nút "Play": bắt đầu ván theo độ khó và giao diện trong Settings. */
+    /** "Play" button: starts a game based on difficulty and settings. */
     public synchronized void startConfiguredGame() {
         Settings s = SettingsManager.getInstance().get();
         DifficultyLevel d = s.getDefaultDifficulty();
@@ -79,17 +78,17 @@ public class GameManager {
         }
     }
 
-    /** Bắt đầu ván ở mức cố định (EASY/MEDIUM/HARD). CUSTOM phải dùng bản 3 tham số. */
+    /** Start a game with fixed difficulty (EASY/MEDIUM/HARD). CUSTOM must use the 3-parameter version. */
     public synchronized void startGame(DifficultyLevel difficulty) {
         if (difficulty == DifficultyLevel.CUSTOM) {
-            throw new IllegalArgumentException("Độ khó CUSTOM cần kích thước và số mìn.");
+            throw new IllegalArgumentException("CUSTOM difficulty requires size and mine count.");
         }
         startGame(difficulty, 0, 0);
     }
 
     public synchronized void startGame(DifficultyLevel difficulty, int customSize, int customMines) {
         if (difficulty == null) {
-            throw new IllegalArgumentException("Chưa chọn độ khó");
+            throw new IllegalArgumentException("Difficulty not selected");
         }
         if (difficulty == DifficultyLevel.CUSTOM) {
             String error = DifficultyLevel.validateCustom(customSize, customMines);
@@ -100,15 +99,15 @@ public class GameManager {
         }
     }
 
-    /** Chơi lại đúng cấu hình của ván gần nhất (kể cả khi đã về menu). */
+    /** Restart using the configuration of the last game. */
     public synchronized void restart() {
         if (difficultyLevel == null) {
-            throw new IllegalStateException("Chưa có ván nào để chơi lại.");
+            throw new IllegalStateException("No previous game to restart.");
         }
         beginGame(difficultyLevel, size, mineCount);
     }
 
-    /** Bỏ ván hiện tại (nếu có) và về menu. Không ghi điểm. */
+    /** Abandon the current game (if any) and return to menu. Does not record score. */
     public synchronized void exitToMenu() {
         stopTimer();
         CommandManager.getInstance().clear();
@@ -120,11 +119,11 @@ public class GameManager {
         lastRecord = null;
         lastRank = 0;
         transitionTo(new InactiveState(GameStatus.NOT_STARTED));
-        fire(GameEvent.RETURNED_TO_MENU, "Về menu.");
+        fire(GameEvent.RETURNED_TO_MENU, "Returned to menu.");
     }
 
     private void beginGame(DifficultyLevel difficulty, int newSize, int newMines) {
-        // Tạo bàn cờ trước: nếu lỗi thì trạng thái hiện tại không bị đụng tới.
+        // Create the board first: if it fails, current state is untouched.
         Theme theme = SettingsManager.getInstance().get().getTheme();
         GameBoardModel board = new GameBoardModel(theme.createFactory());
         board.initialize(newSize, newMines);
@@ -148,24 +147,24 @@ public class GameManager {
         }
 
         transitionTo(new PlayingState());
-        fire(GameEvent.GAME_STARTED, "Bắt đầu ván mới: " + difficulty + " (" + size + "x" + size
-                + ", " + mineCount + " mìn).");
+        fire(GameEvent.GAME_STARTED, "New game started: " + difficulty + " (" + size + "x" + size
+                + ", " + mineCount + " mines).");
     }
 
-    /** Chỉ nội bộ gọi (qua checkWinCondition) nên bên ngoài không thể "thắng giả". */
+    /** Internal use only (via checkWinCondition) so external callers cannot force a win. */
     private void endGame(boolean isWin) {
-        if (getGameStatus() != GameStatus.PLAYING) return; // chống kết thúc/ghi điểm hai lần
+        if (getGameStatus() != GameStatus.PLAYING) return; // prevent double end/score recording
         transitionTo(new InactiveState(isWin ? GameStatus.WON : GameStatus.LOST));
         if (isWin) {
             recordScore();
-            String rank = lastRank > 0 ? " Hạng #" + lastRank + " trên bảng điểm." : "";
-            fire(GameEvent.WON, "Bạn thắng! Thời gian: " + getElapsedSeconds() + "s." + rank);
+            String rank = lastRank > 0 ? " Rank #" + lastRank + " on the leaderboard." : "";
+            fire(GameEvent.WON, "You won! Time: " + getElapsedSeconds() + "s." + rank);
         } else {
-            fire(GameEvent.LOST, "Hết mạng! Bạn đã thua.");
+            fire(GameEvent.LOST, "Out of lives! You lost.");
         }
     }
 
-    /** Chỉ ghi điểm các mức cố định; CUSTOM có kích thước khác nhau nên không so sánh được. */
+    /** Only record scores for fixed difficulties; CUSTOM sizes vary too much to compare. */
     private void recordScore() {
         lastRecord = null;
         lastRank = 0;
@@ -180,7 +179,7 @@ public class GameManager {
         }
     }
 
-    /** Đổi tên trên bản ghi vừa thắng (vd người chơi nhập tên sau khi thắng). */
+    /** Rename the record of the last win (e.g., player enters name after winning). */
     public synchronized boolean renameLastScore(String newName) {
         if (lastRecord == null || difficultyLevel == null) return false;
         ScoreRecord renamed = LeaderboardManager.getInstance().renameScore(difficultyLevel, lastRecord, newName);
@@ -189,15 +188,15 @@ public class GameManager {
         return true;
     }
 
-    // ---------- Thao tác (uỷ quyền cho State) ----------
+    // ---------- Actions (delegated to State) ----------
 
-    /** Lật ô. Bỏ qua nếu đang ở menu. Nên dùng cái này thay vì tự tạo RevealCommand bên ngoài. */
+    /** Reveal a cell. Ignored if at menu. Better to use this than creating a RevealCommand externally. */
     public synchronized void reveal(int x, int y) {
         if (gameBoard == null) return;
         handleCellAction(new RevealCommand(gameBoard, x, y));
     }
 
-    /** Bật/tắt cờ. Bỏ qua nếu đang ở menu. */
+    /** Toggle flag. Ignored if at menu. */
     public synchronized void toggleFlag(int x, int y) {
         if (gameBoard == null) return;
         handleCellAction(new FlagCommand(gameBoard, x, y));
@@ -207,7 +206,7 @@ public class GameManager {
         if (command == null) return;
         currentState.handleCommand(this, command);
 
-        // Timer bắt đầu từ lần click đầu tiên
+        // Timer starts from the first click
         if (!timerStarted && gameBoard != null && gameBoard.isMinesGenerated()
                 && getGameStatus() == GameStatus.PLAYING) {
             timerStarted = true;
@@ -219,7 +218,7 @@ public class GameManager {
         return currentState.useHint(this);
     }
 
-    /** @return true nếu có thay đổi thực sự được hoàn tác. */
+    /** @return true if an actual change was undone. */
     public synchronized boolean undo() {
         return currentState.undo(this);
     }
@@ -228,7 +227,7 @@ public class GameManager {
         GameStatus before = getGameStatus();
         currentState.pause(this);
         if (before != GameStatus.PAUSED && getGameStatus() == GameStatus.PAUSED) {
-            fire(GameEvent.PAUSED, "Tạm dừng.");
+            fire(GameEvent.PAUSED, "Game paused.");
         }
     }
 
@@ -236,11 +235,11 @@ public class GameManager {
         GameStatus before = getGameStatus();
         currentState.resume(this);
         if (before == GameStatus.PAUSED && getGameStatus() == GameStatus.PLAYING) {
-            fire(GameEvent.RESUMED, "Tiếp tục.");
+            fire(GameEvent.RESUMED, "Game resumed.");
         }
     }
 
-    /** Được PlayingState gọi sau mỗi lệnh. */
+    /** Called by PlayingState after every command. */
     public synchronized void checkWinCondition() {
         if (getGameStatus() != GameStatus.PLAYING || gameBoard == null) return;
 
@@ -251,13 +250,13 @@ public class GameManager {
             endGame(false);
         } else if (gameBoard.getRevealedSafeCount() == safeCells) {
             endGame(true);
-        } else if (minesHit > lastReportedMinesHit) { // chỉ báo khi vừa mất thêm mạng
+        } else if (minesHit > lastReportedMinesHit) { // Only notify when losing a life
             lastReportedMinesHit = minesHit;
-            fire(GameEvent.LIFE_LOST, "Cẩn thận! Còn " + (MAX_MINES_HIT - minesHit) + " mạng.");
+            fire(GameEvent.LIFE_LOST, "Careful! " + (MAX_MINES_HIT - minesHit) + " lives remaining.");
         }
     }
 
-    /** Dành cho các State; tự đóng băng/khởi động lại timer theo trạng thái mới. */
+    /** For States: automatically stops/restarts timer according to the new state. */
     public synchronized void transitionTo(IGameState newState) {
         stopTimer();
         this.currentState = newState;
@@ -288,7 +287,7 @@ public class GameManager {
         return total / 1_000_000_000L;
     }
 
-    /** Dùng cho test: thay đồng hồ (đơn vị nano giây). Nên gọi khi không có ván đang chạy. */
+    /** For testing: inject a custom clock (in nanoseconds). Should be called when no game is running. */
     public synchronized void setClock(LongSupplier nanoClock) {
         if (nanoClock != null) this.clock = nanoClock;
     }
@@ -303,7 +302,7 @@ public class GameManager {
         }
 
         List<String> rows = new ArrayList<>();
-        if (status != GameStatus.PAUSED) { // tạm dừng thì giấu bàn cờ
+        if (status != GameStatus.PAUSED) { // Hide board if paused
             boolean showMines = status == GameStatus.LOST;
             for (int i = 0; i < size; i++) {
                 StringBuilder sb = new StringBuilder(size);
@@ -332,7 +331,7 @@ public class GameManager {
 
     // ---------- Observer / Listener ----------
 
-    /** Observer bàn cờ được đăng ký lại tự động mỗi khi bắt đầu ván mới. */
+    /** Board observers are automatically re-registered at the start of a new game. */
     public synchronized void registerBoardObserver(IGameBoardObserver observer) {
         if (observer == null || boardObservers.contains(observer)) return;
         boardObservers.add(observer);
@@ -353,7 +352,7 @@ public class GameManager {
         }
     }
 
-    // ---------- Getter ----------
+    // ---------- Getters & Setters ----------
 
     public synchronized void setHintUsed(boolean used) { this.hintUsed = used; }
     public synchronized boolean isHintUsed() { return hintUsed; }

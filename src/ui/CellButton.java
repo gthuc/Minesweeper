@@ -1,3 +1,4 @@
+// File: src/ui/CellButton.java
 package ui;
 import javax.swing.*;
 import java.awt.*;
@@ -10,13 +11,17 @@ public class CellButton extends JButton {
         this.row = row;
         this.col = col;
 
-        // Cố định kích thước mỗi ô là hình vuông 40x40 pixel
         setPreferredSize(new Dimension(40, 40));
-        setFocusPainted(false); // Bỏ viền viền focus nét đứt khi click
+        setFocusPainted(false);
         setFont(new Font("Arial", Font.BOLD, 14));
+
+        // --- FIX LỖI TÀNG HÌNH MÀU NỀN TRÊN MACOS ---
+        setOpaque(true); // Cho phép nút được tô màu toàn bộ
+        setContentAreaFilled(true); // Đổ màu vào phần ruột nút
+        setBorder(BorderFactory.createLineBorder(Color.GRAY)); // Bo viền vuông vắn cho giống ô mìn
+        // --------------------------------------------
     }
 
-    // Các hàm Getter để lấy tọa độ
     public int getRow() { return row; }
     public int getCol() { return col; }
 }
