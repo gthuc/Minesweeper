@@ -16,6 +16,7 @@ import java.util.Scanner;
 /** Console: mở đầu bằng MENU (Play / Difficulty / Leaderboard / Settings / Quit). */
 public class Main {
     public static void main(String[] args) {
+        // 1. Lấy phiên bản GameManager duy nhất (Singleton)
         GameManager gm = GameManager.getInstance();
         ConsoleView view = new ConsoleView();
         gm.registerBoardObserver(view);
