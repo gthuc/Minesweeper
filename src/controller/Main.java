@@ -1,4 +1,3 @@
-// File: src/controller/Main.java
 package controller;
 
 import ui.GameFrame;

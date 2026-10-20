@@ -126,8 +126,9 @@ public class GameFrame extends JFrame implements IGameEventListener {
     @Override
     public void onGameEvent(GameEvent event, String message) {
         SwingUtilities.invokeLater(() -> {
-            if (event == GameEvent.WON || event == GameEvent.LOST || event == GameEvent.LIFE_LOST) {
-                String title = (event == GameEvent.WON) ? "Victory!" : "Notification";
+            // CHỈ hiện popup thông báo khi THẮNG (WON) hoặc THUA (LOST)
+            if (event == GameEvent.WON || event == GameEvent.LOST) {
+                String title = (event == GameEvent.WON) ? "Victory!" : "Game Over";
                 int messageType = (event == GameEvent.LOST) ? JOptionPane.ERROR_MESSAGE : JOptionPane.INFORMATION_MESSAGE;
 
                 JOptionPane.showMessageDialog(this, message, title, messageType);

@@ -71,6 +71,10 @@ public class LeaderboardDialog extends JDialog {
         JTable table = new JTable(tableModel);
         table.setFillsViewportHeight(true);
 
+        // --- FIX: CỐ ĐỊNH CỘT, KHÔNG CHO PHÉP KÉO THẢ ---
+        table.getTableHeader().setReorderingAllowed(false);
+        // -----------------------------------------------
+
         // Căn chỉnh kích thước cột cho đẹp mắt
         table.getColumnModel().getColumn(0).setPreferredWidth(40);
         table.getColumnModel().getColumn(1).setPreferredWidth(120);

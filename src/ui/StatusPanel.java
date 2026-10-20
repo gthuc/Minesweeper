@@ -1,3 +1,4 @@
+// File: src/ui/StatusPanel.java
 package ui;
 
 import controller.GameManager;
@@ -10,21 +11,25 @@ import java.awt.*;
 
 public class StatusPanel extends JPanel implements IGameBoardObserver {
     private JLabel mineCountLabel;
+    private JLabel livesLabel; // Nhãn hiển thị mạng sống
     private JLabel timerLabel;
     private GameManager gameManager;
-    private Timer uiTimer; // UI timer for the clock
+    private Timer uiTimer;
 
     public StatusPanel(GameManager gameManager) {
         this.gameManager = gameManager;
-        setLayout(new FlowLayout(FlowLayout.CENTER, 50, 5));
+        // Giảm khoảng cách giữa các thành phần một chút để vừa 3 mục
+        setLayout(new FlowLayout(FlowLayout.CENTER, 40, 5));
 
         mineCountLabel = new JLabel("Mines: --");
+        livesLabel = new JLabel("Lives: ❤️❤️❤️");
         timerLabel = new JLabel("Time: 00:00");
 
+        // Đưa livesLabel vào giữa số mìn và đồng hồ
         add(mineCountLabel);
+        add(livesLabel);
         add(timerLabel);
 
-        // Initialize Timer to run every 500ms (0.5s) to update the clock
         uiTimer = new Timer(500, e -> updateTimerDisplay());
         uiTimer.start();
     }
@@ -39,11 +44,28 @@ public class StatusPanel extends JPanel implements IGameBoardObserver {
     }
 
     public void updateStatus() {
-        if (gameManager != null && gameManager.getGameBoard() != null) {
-            GameBoardModel board = gameManager.getGameBoard();
-            int totalMines = board.getTotalMines();
-            int flagCount = board.getFlagCount();
-            mineCountLabel.setText("Mines: " + (totalMines - flagCount));
+        if (gameManager != null) {
+            // Cập nhật số mìn
+            if (gameManager.getGameBoard() != null) {
+                GameBoardModel board = gameManager.getGameBoard();
+                int totalMines = board.getTotalMines();
+                int flagCount = board.getFlagCount();
+                mineCountLabel.setText("Mines: " + (totalMines - flagCount));
+            }
+
+            // Cập nhật số mạng sống
+            int lives = gameManager.getLivesRemaining();
+            StringBuilder hearts = new StringBuilder();
+
+            if (lives > 0) {
+                for (int i = 0; i < lives; i++) {
+                    hearts.append("❤️ ");
+                }
+            } else {
+                hearts.append("💔"); // Hiển thị trái tim vỡ khi hết mạng
+            }
+
+            livesLabel.setText("Lives: " + hearts.toString().trim());
         }
     }
 
