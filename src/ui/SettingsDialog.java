@@ -17,8 +17,8 @@ public class SettingsDialog extends JDialog {
     private JTextField minesField;
 
     public SettingsDialog(JFrame parent) {
-        super(parent, "Settings - Minesweeper", true);
-        setSize(400, 300);
+        super(parent, "⚙️ Settings - Minesweeper", true);
+        setSize(420, 320);
         setLocationRelativeTo(parent);
         setLayout(new BorderLayout());
 
@@ -28,36 +28,34 @@ public class SettingsDialog extends JDialog {
         formPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
         // Tên người chơi
-        formPanel.add(new JLabel("Player Name:"));
+        formPanel.add(new JLabel("👤 Player Name:"));
         nameField = new JTextField(settings.getPlayerName());
         formPanel.add(nameField);
 
-        // Độ khó mặc định
-        formPanel.add(new JLabel("Default Difficulty:"));
-        difficultyComboBox = new JComboBox<>(new DifficultyLevel[]{
-                DifficultyLevel.EASY, DifficultyLevel.MEDIUM, DifficultyLevel.HARD
-        });
+        // Độ khó mặc định (Đã bổ sung đầy đủ EASY, MEDIUM, HARD, CUSTOM)
+        formPanel.add(new JLabel("🎯 Default Difficulty:"));
+        difficultyComboBox = new JComboBox<>(DifficultyLevel.values());
         difficultyComboBox.setSelectedItem(settings.getDefaultDifficulty());
         formPanel.add(difficultyComboBox);
 
         // Giao diện (Theme)
-        formPanel.add(new JLabel("Theme:"));
+        formPanel.add(new JLabel("🎨 Theme:"));
         themeComboBox = new JComboBox<>(Theme.values());
         themeComboBox.setSelectedItem(settings.getTheme());
         formPanel.add(themeComboBox);
 
         // Kích thước tùy chỉnh (Custom Size)
-        formPanel.add(new JLabel("Custom Size (Rows/Cols):"));
+        formPanel.add(new JLabel("📐 Custom Size (Rows/Cols):"));
         sizeField = new JTextField(String.valueOf(settings.getCustomSize()));
         formPanel.add(sizeField);
 
         // Số mìn tùy chỉnh (Custom Mines)
-        formPanel.add(new JLabel("Custom Mines:"));
+        formPanel.add(new JLabel("💣 Custom Mines:"));
         minesField = new JTextField(String.valueOf(settings.getCustomMines()));
         formPanel.add(minesField);
 
         // Bật/tắt âm thanh
-        formPanel.add(new JLabel("Sound Enabled:"));
+        formPanel.add(new JLabel("🔊 Sound Enabled:"));
         soundCheckBox = new JCheckBox();
         soundCheckBox.setSelected(settings.isSoundEnabled());
         formPanel.add(soundCheckBox);
@@ -66,8 +64,8 @@ public class SettingsDialog extends JDialog {
 
         // Nút Lưu và Hủy
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        JButton saveButton = new JButton("Save");
-        JButton cancelButton = new JButton("Cancel");
+        JButton saveButton = new JButton("💾 Save");
+        JButton cancelButton = new JButton("🚫 Cancel");
 
         saveButton.addActionListener(e -> saveSettings());
         cancelButton.addActionListener(e -> dispose());
@@ -86,7 +84,7 @@ public class SettingsDialog extends JDialog {
             Theme theme = (Theme) themeComboBox.getSelectedItem();
             boolean sound = soundCheckBox.isSelected();
 
-            // Sử dụng SettingsManager để cập nhật và lưu file an toàn
+            // Cập nhật và lưu file settings an toàn
             SettingsManager.getInstance().update(s -> {
                 s.setPlayerName(newName);
                 s.setDefaultDifficulty(diff);

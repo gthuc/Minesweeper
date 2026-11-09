@@ -5,6 +5,8 @@ import hint.HintResult;
 import model.DifficultyLevel;
 import observer.GameEvent;
 import observer.IGameEventListener;
+import settings.Settings;
+import settings.SettingsManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -32,16 +34,14 @@ public class GameFrame extends JFrame implements IGameEventListener {
 
         JPanel bottomPanel = new JPanel(new FlowLayout());
 
-        JButton undoButton = new JButton("Undo");
+        JButton undoButton = new JButton("↩️ Undo");
         undoButton.addActionListener(e -> gameManager.undo());
 
-        // --- SỬA LẠI LOGIC NÚT HINT ---
-        JButton hintButton = new JButton("Hint");
+        JButton hintButton = new JButton("💡 Hint");
         hintButton.addActionListener(e -> {
             HintResult hint = gameManager.useHint();
             if (hint != null) {
                 boardPanel.highlightHint(hint);
-                // Nếu ô đó đang bị cắm cờ, hiện cảnh báo
                 if (hint.isOnFlaggedCell()) {
                     JOptionPane.showMessageDialog(this,
                             "The hint points to a flagged cell. Please unflag it first!",
@@ -53,16 +53,17 @@ public class GameFrame extends JFrame implements IGameEventListener {
                         "Hint", JOptionPane.INFORMATION_MESSAGE);
             }
         });
-        // ------------------------------
 
         bottomPanel.add(undoButton);
         bottomPanel.add(hintButton);
 
         add(topPanel, BorderLayout.NORTH);
+
         JScrollPane scrollPane = new JScrollPane(boardPanel);
-        scrollPane.setBorder(BorderFactory.createEmptyBorder()); // Bỏ viền mặc định
-        scrollPane.getVerticalScrollBar().setUnitIncrement(16);  // Cuộn mượt hơn
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
         add(scrollPane, BorderLayout.CENTER);
+
         add(bottomPanel, BorderLayout.SOUTH);
 
         gameManager.registerBoardObserver(statusPanel);
@@ -73,40 +74,44 @@ public class GameFrame extends JFrame implements IGameEventListener {
 
     private void setupMenuBar() {
         JMenuBar menuBar = new JMenuBar();
-        JMenu gameMenu = new JMenu("Game");
+        JMenu gameMenu = new JMenu("🎮 Game");
 
-        JMenuItem easyItem = new JMenuItem("New Game (EASY 9x9)");
+        JMenuItem easyItem = new JMenuItem("🟢 New Game (EASY 9x9)");
         easyItem.addActionListener(e -> startNewGame(DifficultyLevel.EASY));
 
-        JMenuItem mediumItem = new JMenuItem("New Game (MEDIUM 16x16)");
+        JMenuItem mediumItem = new JMenuItem("🟡 New Game (MEDIUM 16x16)");
         mediumItem.addActionListener(e -> startNewGame(DifficultyLevel.MEDIUM));
 
-        JMenuItem hardItem = new JMenuItem("New Game (HARD 24x24)");
+        JMenuItem hardItem = new JMenuItem("🔴 New Game (HARD 24x24)");
         hardItem.addActionListener(e -> startNewGame(DifficultyLevel.HARD));
 
-        // --- THÊM MỤC SETTINGS VÀO MENU ---
-        JMenuItem settingsItem = new JMenuItem("Settings");
+        // --- BỔ SUNG NÚT NEW GAME (CUSTOM) ---
+        JMenuItem customItem = new JMenuItem("⚙️ New Game (CUSTOM)");
+        customItem.addActionListener(e -> startCustomGame());
+        // -------------------------------------
+
+        JMenuItem settingsItem = new JMenuItem("⚙️ Settings");
         settingsItem.addActionListener(e -> {
             SettingsDialog settingsDialog = new SettingsDialog(this);
             settingsDialog.setVisible(true);
         });
-        // ----------------------------------
 
-        JMenuItem leaderboardItem = new JMenuItem("Leaderboard");
+        JMenuItem leaderboardItem = new JMenuItem("🏆 Leaderboard");
         leaderboardItem.addActionListener(e -> {
             LeaderboardDialog dialog = new LeaderboardDialog(this);
             dialog.setVisible(true);
         });
 
-        JMenuItem exitItem = new JMenuItem("Exit");
+        JMenuItem exitItem = new JMenuItem("🚪 Exit");
         exitItem.addActionListener(e -> System.exit(0));
 
         gameMenu.add(easyItem);
         gameMenu.add(mediumItem);
         gameMenu.add(hardItem);
+        gameMenu.add(customItem); // Thêm vào Menu
         gameMenu.addSeparator();
-        gameMenu.add(settingsItem);     // Thêm Settings vào Menu
-        gameMenu.add(leaderboardItem);  // Thêm Leaderboard vào Menu
+        gameMenu.add(settingsItem);
+        gameMenu.add(leaderboardItem);
         gameMenu.addSeparator();
         gameMenu.add(exitItem);
 
@@ -115,6 +120,10 @@ public class GameFrame extends JFrame implements IGameEventListener {
     }
 
     private void startNewGame(DifficultyLevel difficulty) {
+        if (difficulty == DifficultyLevel.CUSTOM) {
+            startCustomGame();
+            return;
+        }
         gameManager.startGame(difficulty);
         boardPanel.initializeBoard();
         statusPanel.updateStatus();
@@ -123,11 +132,60 @@ public class GameFrame extends JFrame implements IGameEventListener {
         setLocationRelativeTo(null);
     }
 
+    // Hàm tạo ván mới theo cấu hình Custom từ Settings
+    private void startCustomGame() {
+        Settings s = SettingsManager.getInstance().get();
+        try {
+            gameManager.startGame(DifficultyLevel.CUSTOM, s.getCustomSize(), s.getCustomMines());
+            boardPanel.initializeBoard();
+            statusPanel.updateStatus();
+
+            pack();
+            setLocationRelativeTo(null);
+        } catch (IllegalArgumentException ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Custom Game Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    public void shakeScreen() {
+        Point originalLocation = getLocation();
+        int shakeDistance = 8;
+        int delay = 25;
+        int totalDuration = 250;
+        long startTime = System.currentTimeMillis();
+
+        Timer timer = new Timer(delay, null);
+        timer.addActionListener(e -> {
+            long elapsed = System.currentTimeMillis() - startTime;
+            if (elapsed >= totalDuration) {
+                setLocation(originalLocation);
+                timer.stop();
+            } else {
+                int offsetX = (int) ((Math.random() - 0.5) * 2 * shakeDistance);
+                int offsetY = (int) ((Math.random() - 0.5) * 2 * shakeDistance);
+                setLocation(originalLocation.x + offsetX, originalLocation.y + offsetY);
+            }
+        });
+        timer.start();
+    }
+
     @Override
     public void onGameEvent(GameEvent event, String message) {
         SwingUtilities.invokeLater(() -> {
-            // CHỈ hiện popup thông báo khi THẮNG (WON) hoặc THUA (LOST)
-            if (event == GameEvent.WON || event == GameEvent.LOST) {
+            boolean isSoundOn = SettingsManager.getInstance().get().isSoundEnabled();
+
+            if (event == GameEvent.LIFE_LOST) {
+                if (isSoundOn) {
+                    Toolkit.getDefaultToolkit().beep();
+                }
+                shakeScreen();
+            } else if (event == GameEvent.WON || event == GameEvent.LOST) {
+                if (isSoundOn) {
+                    Toolkit.getDefaultToolkit().beep();
+                }
+                if (event == GameEvent.LOST) {
+                    shakeScreen();
+                }
                 String title = (event == GameEvent.WON) ? "Victory!" : "Game Over";
                 int messageType = (event == GameEvent.LOST) ? JOptionPane.ERROR_MESSAGE : JOptionPane.INFORMATION_MESSAGE;
 

@@ -1,3 +1,4 @@
+// File: src/ui/LeaderboardDialog.java
 package ui;
 
 import model.DifficultyLevel;
@@ -13,38 +14,77 @@ import java.util.List;
 
 public class LeaderboardDialog extends JDialog {
 
+    private JTabbedPane tabbedPane;
+
     public LeaderboardDialog(JFrame parent) {
-        super(parent, "Leaderboard - Minesweeper", true);
-        setSize(550, 400);
+        super(parent, "🏆 Leaderboard - Minesweeper", true);
+        setSize(550, 420);
         setLocationRelativeTo(parent);
         setLayout(new BorderLayout());
 
-        // Sử dụng TabbedPane để chia bảng xếp hạng theo từng mức độ khó
-        JTabbedPane tabbedPane = new JTabbedPane();
-
-        tabbedPane.addTab("Easy (9x9)", createTablePanel(DifficultyLevel.EASY));
-        tabbedPane.addTab("Medium (16x16)", createTablePanel(DifficultyLevel.MEDIUM));
-        tabbedPane.addTab("Hard (24x24)", createTablePanel(DifficultyLevel.HARD));
+        tabbedPane = new JTabbedPane();
+        refreshTabs();
 
         add(tabbedPane, BorderLayout.CENTER);
 
-        // Nút đóng cửa sổ
-        JButton closeButton = new JButton("Close");
+        JButton clearButton = new JButton("🗑️ Clear Scores");
+        JButton closeButton = new JButton("❌ Close");
+
+        clearButton.addActionListener(e -> clearSelectedLeaderboard());
         closeButton.addActionListener(e -> dispose());
-        JPanel bottomPanel = new JPanel();
+
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        bottomPanel.add(clearButton);
         bottomPanel.add(closeButton);
         add(bottomPanel, BorderLayout.SOUTH);
+    }
+
+    private void refreshTabs() {
+        int currentIndex = tabbedPane.getSelectedIndex();
+        tabbedPane.removeAll();
+
+        tabbedPane.addTab("🟢 Easy (9x9)", createTablePanel(DifficultyLevel.EASY));
+        tabbedPane.addTab("🟡 Medium (16x16)", createTablePanel(DifficultyLevel.MEDIUM));
+        tabbedPane.addTab("🔴 Hard (24x24)", createTablePanel(DifficultyLevel.HARD));
+
+        if (currentIndex >= 0 && currentIndex < tabbedPane.getTabCount()) {
+            tabbedPane.setSelectedIndex(currentIndex);
+        }
+    }
+
+    private void clearSelectedLeaderboard() {
+        int index = tabbedPane.getSelectedIndex();
+        DifficultyLevel level;
+
+        switch (index) {
+            case 0: level = DifficultyLevel.EASY; break;
+            case 1: level = DifficultyLevel.MEDIUM; break;
+            case 2: level = DifficultyLevel.HARD; break;
+            default: return;
+        }
+
+        int confirm = JOptionPane.showConfirmDialog(
+                this,
+                "Are you sure you want to clear the leaderboard for " + level + "?",
+                "Confirm Clear",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE
+        );
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            LeaderboardManager.getInstance().clear(level);
+            refreshTabs();
+        }
     }
 
     private JPanel createTablePanel(DifficultyLevel level) {
         JPanel panel = new JPanel(new BorderLayout());
 
-        // Cột hiển thị: Hạng, Tên, Thời gian (giây), Số mìn nổ, Gợi ý, Ngày giờ
         String[] columnNames = {"Rank", "Player", "Time (s)", "Mines Hit", "Hint Used", "Date"};
         DefaultTableModel tableModel = new DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false; // Không cho phép chỉnh sửa trực tiếp trên bảng
+                return false;
             }
         };
 
@@ -70,12 +110,8 @@ public class LeaderboardDialog extends JDialog {
 
         JTable table = new JTable(tableModel);
         table.setFillsViewportHeight(true);
-
-        // --- FIX: CỐ ĐỊNH CỘT, KHÔNG CHO PHÉP KÉO THẢ ---
         table.getTableHeader().setReorderingAllowed(false);
-        // -----------------------------------------------
 
-        // Căn chỉnh kích thước cột cho đẹp mắt
         table.getColumnModel().getColumn(0).setPreferredWidth(40);
         table.getColumnModel().getColumn(1).setPreferredWidth(120);
         table.getColumnModel().getColumn(2).setPreferredWidth(70);

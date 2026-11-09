@@ -1,14 +1,21 @@
 package controller;
 
 import ui.GameFrame;
-import javax.swing.SwingUtilities;
+
+import javax.swing.*;
 
 public class Main {
     public static void main(String[] args) {
-        // Sử dụng EDT (Event Dispatch Thread) để khởi tạo giao diện an toàn
+        // Thiết lập Look and Feel chuẩn theo hệ điều hành đang chạy (Windows / macOS)
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         SwingUtilities.invokeLater(() -> {
-            GameManager manager = GameManager.getInstance();
-            GameFrame frame = new GameFrame(manager);
+            GameManager gameManager = GameManager.getInstance();
+            GameFrame frame = new GameFrame(gameManager);
             frame.setVisible(true);
         });
     }
