@@ -1,0 +1,15 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Run Minesweeper",
+            "request": "launch",
+            "mainClass": "controller.Main",
+            "classPaths": ["${workspaceFolder}/target/classes"],
+            "javaExec": "C:/Program Files/Java/jdk-21.0.12.1/bin/java.exe",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal"
+        }
+    ]
+}

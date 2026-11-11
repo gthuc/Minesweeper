@@ -74,6 +74,8 @@ public class GameTests {
         testFlagVsMinesLeft();
         testHintsAreSound();
         testHintFlaggedCells();
+        testHintProximity();
+        testHintColors();
         testMineNotUndoable();
         testUndoSkipsNoOps();
         testDifficultyConfig();
@@ -141,7 +143,7 @@ public class GameTests {
     }
 
     /**
-     * Checks certain deductions across seeded games, including incorrect player flags.
+     * Checks world classifications across seeded games, including incorrect player flags.
      */
     static void testHintsAreSound() {
         int violations = 0, hintsChecked = 0;
@@ -165,10 +167,10 @@ public class GameTests {
 
             for (int step = 0; step < 600; step++) {
                 HintResult h = HintSystem.getInstance().getHint(b);
-                if (h == null || h.getType() == HintType.PROBABLE) break;
+                if (h == null) break;
                 CellModel c = b.getCell(h.getX(), h.getY());
                 hintsChecked++;
-                if (h.getType() == HintType.CERTAIN_SAFE) {
+                if (h.getType() == HintType.SAFE) {
                     if (c.isMine()) { violations++; break; }
                     if (c.isFlagged()) b.toggleFlag(h.getX(), h.getY());
                     b.revealCell(h.getX(), h.getY());
@@ -178,12 +180,12 @@ public class GameTests {
                 }
             }
         }
-        System.out.println("   (checked " + hintsChecked + " certain hints)");
-        check(hintsChecked > 0 && violations == 0, "CERTAIN_* hints are always correct, even after mine hits or incorrect flags");
+        System.out.println("   (checked " + hintsChecked + " world hints)");
+        check(hintsChecked > 0 && violations == 0, "World hints are always correct, even after mine hits or incorrect flags");
 
         GameBoardModel fresh = board(9, 10, 5);
         HintResult first = HintSystem.getInstance().getHint(fresh);
-        check(first != null && first.getType() == HintType.CERTAIN_SAFE, "before the first click, a safe cell is suggested");
+        check(first != null && first.getType() == HintType.SAFE, "before the first click, a safe cell is suggested");
     }
 
     static void testHintFlaggedCells() {
@@ -196,10 +198,72 @@ public class GameTests {
                 if (!b.getCell(i, j).isRevealed()) b.toggleFlag(i, j);
             }
             HintResult h = HintSystem.getInstance().getHint(b);
-            ok = h != null && h.isOnFlaggedCell();
+            ok = h == null;
             tested = true;
         }
-        check(tested && ok, "hints remain available when all hidden cells are flagged and identify flagged cells");
+        check(tested && ok, "no hint is returned when all hidden cells are flagged");
+    }
+
+    /** Compares BFS selection against direct geometric distances across seeded worlds. */
+    static void testHintProximity() {
+        boolean ok = true;
+        for (int seed = 0; seed < 100; seed++) {
+            GameBoardModel b = board(9, 10, seed);
+            b.revealCell(4, 4);
+            Random random = new Random(seed);
+            for (int r = 0; r < 9; r++) for (int c = 0; c < 9; c++) {
+                if (!b.getCell(r, c).isRevealed() && random.nextInt(8) == 0) b.toggleFlag(r, c);
+            }
+            HintResult h = HintSystem.getInstance().getHint(b);
+            int bestDistance = Integer.MAX_VALUE, bestNeighbors = -1;
+            boolean bestMine = true;
+            int expectedR = -1, expectedC = -1;
+            for (int r = 0; r < 9; r++) for (int c = 0; c < 9; c++) {
+                CellModel cell = b.getCell(r, c);
+                if (cell.isRevealed() || cell.isFlagged()) continue;
+                int distance = Integer.MAX_VALUE, neighbors = 0;
+                for (int x = 0; x < 9; x++) for (int y = 0; y < 9; y++) {
+                    if (!b.getCell(x, y).isRevealed()) continue;
+                    int d = Math.max(Math.abs(x - r), Math.abs(y - c));
+                    distance = Math.min(distance, d);
+                    if (d == 1) neighbors++;
+                }
+                if (distance < bestDistance || (distance == bestDistance && neighbors > bestNeighbors)
+                        || (distance == bestDistance && neighbors == bestNeighbors && bestMine && !cell.isMine())) {
+                    bestDistance = distance;
+                    bestNeighbors = neighbors;
+                    bestMine = cell.isMine();
+                    expectedR = r;
+                    expectedC = c;
+                }
+            }
+            ok &= expectedR < 0 ? h == null : h != null && h.getX() == expectedR && h.getY() == expectedC;
+        }
+        check(ok, "hints prioritize nearest distance, then opened neighbors, then Safe across 100 worlds");
+        GameBoardModel fresh = board(9, 10, 0);
+        HintResult first = HintSystem.getInstance().getHint(fresh);
+        check(first.getX() == 4 && first.getY() == 4 && !fresh.isMinesGenerated(),
+                "opening hint selects the center without generating mines");
+        check(HintSystem.getInstance().getHint(null) == null, "no hint without a board");
+    }
+
+    static void testHintColors() throws Exception {
+        javax.swing.SwingUtilities.invokeAndWait(() -> {
+            freshManagers("hint-colors");
+            GameManager gm = GameManager.getInstance();
+            gm.startGame(DifficultyLevel.EASY);
+            ui.BoardPanel panel = new ui.BoardPanel(gm);
+            panel.initializeBoard();
+            panel.highlightHint(new HintResult(4, 4, HintType.SAFE));
+            java.awt.Component[] buttons = panel.getComponents();
+            check(java.awt.Color.GREEN.equals(buttons[40].getBackground()), "Safe hint is green");
+            panel.highlightHint(new HintResult(0, 0, HintType.MINE));
+            check(java.awt.Color.RED.equals(buttons[0].getBackground()), "Mine hint is red");
+            check(!java.awt.Color.GREEN.equals(buttons[40].getBackground()), "new hint clears the previous highlight");
+            check(!gm.getGameBoard().isMinesGenerated() && gm.getGameBoard().getFlagCount() == 0,
+                    "highlighting hints does not mutate the board");
+            gm.exitToMenu();
+        });
     }
 
     static void testMineNotUndoable() {
@@ -378,7 +442,7 @@ public class GameTests {
         check(h != null && !gm.isHintUsed(), "hints before the first click do not mark hints as used");
         gm.toggleFlag(4, 4);
         HintResult flagged = gm.useHint();
-        check(flagged != null && flagged.isOnFlaggedCell(), "hints targeting flagged cells are marked accordingly");
+        check(flagged != null && !flagged.isOnFlaggedCell() && (flagged.getX() != 4 || flagged.getY() != 4), "opening hints skip flagged cells");
         gm.toggleFlag(4, 4);
         gm.reveal(4, 4);
         check(gm.useHint() != null && gm.isHintUsed(), "hints after the first click are counted as used");

@@ -1,7 +1,7 @@
 package hint;
 
 /**
- * Describes a suggested cell, its certainty category, and whether it is flagged.
+ * Describes a suggested cell, its world classification, and whether it is flagged.
  * This result does not reveal or flag the cell by itself.
  */
 public class HintResult {

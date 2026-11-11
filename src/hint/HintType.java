@@ -1,10 +1,9 @@
 package hint;
 
 /**
- * Distinguishes proven safe cells, proven mines, and heuristic suggestions.
+ * Classifies a cell using the actual world.
  */
 public enum HintType {
-    CERTAIN_SAFE,
-    CERTAIN_MINE,
-    PROBABLE
+    SAFE,
+    MINE
 }

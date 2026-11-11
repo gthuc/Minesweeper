@@ -44,14 +44,8 @@ public class GameFrame extends JFrame implements IGameEventListener {
         JButton hintButton = new JButton("💡 Hint");
         hintButton.addActionListener(e -> {
             HintResult hint = gameManager.useHint();
-            if (hint != null) {
-                boardPanel.highlightHint(hint);
-                if (hint.isOnFlaggedCell()) {
-                    JOptionPane.showMessageDialog(this,
-                            "The hint points to a flagged cell. Please unflag it first!",
-                            "Warning", JOptionPane.WARNING_MESSAGE);
-                }
-            } else {
+            boardPanel.highlightHint(hint);
+            if (hint == null) {
                 JOptionPane.showMessageDialog(this,
                         "No hints available at the moment!",
                         "Hint", JOptionPane.INFORMATION_MESSAGE);

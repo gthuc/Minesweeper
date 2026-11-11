@@ -20,7 +20,7 @@ import java.util.Map;
  * when possible, returning an empty leaderboard on supported load failures.
  */
 public class FileScoreStorage implements IScoreStorage {
-    private static final String DEFAULT_PATH = "leaderboard.dat";
+    private static final String DEFAULT_PATH = "resources/data/leaderboard.dat";
 
     private final Path path;
 
@@ -39,6 +39,8 @@ public class FileScoreStorage implements IScoreStorage {
     public void saveScores(Map<DifficultyLevel, List<ScoreRecord>> scores) {
         Path tmp = Paths.get(path.toString() + ".tmp");
         try {
+            Path parent = path.toAbsolutePath().getParent();
+            Files.createDirectories(parent);
             try (ObjectOutputStream oos = new ObjectOutputStream(Files.newOutputStream(tmp))) {
                 oos.writeObject(scores);
             }

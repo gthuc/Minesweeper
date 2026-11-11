@@ -149,6 +149,7 @@ public class BoardPanel extends JPanel implements IGameBoardObserver {
      * Colors the suggested cell without revealing it or changing board state.
      */
     public void highlightHint(HintResult hint) {
+        onBoardChange(null);
         if (hint == null || cellButtons == null) return;
         int r = hint.getX();
         int c = hint.getY();
@@ -157,14 +158,11 @@ public class BoardPanel extends JPanel implements IGameBoardObserver {
             CellButton btn = cellButtons[r][c];
 
             switch (hint.getType()) {
-                case CERTAIN_SAFE:
+                case SAFE:
                     btn.setBackground(Color.GREEN);
                     break;
-                case CERTAIN_MINE:
-                    btn.setBackground(Color.ORANGE);
-                    break;
-                case PROBABLE:
-                    btn.setBackground(Color.YELLOW);
+                case MINE:
+                    btn.setBackground(Color.RED);
                     break;
             }
         }
