@@ -7,22 +7,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
-
-
-
-
-
-
-
+/**
+ * Ranks hidden cells using averaged local mine-density estimates.
+ * These scores are heuristics, not exact joint probabilities. Unconstrained cells use
+ * global density; unflagged candidates are preferred over flagged alternatives.
+ */
 public class IntelligentHintStrategy implements IHintStrategy {
-
     @Override
     public HintResult getHintPosition(GameBoardModel board) {
         int size = board.getSize();
         List<Constraint> constraints = Constraint.build(board);
 
-        Map<Integer, double[]> sums = new HashMap<>();  
+        // Each entry stores the sum of local risk estimates and their observation count.
+        Map<Integer, double[]> sums = new HashMap<>();
         for (Constraint c : constraints) {
             double p = (double) c.remaining / c.cells.size();
             for (int code : c.cells) {
@@ -34,6 +31,7 @@ public class IntelligentHintStrategy implements IHintStrategy {
 
         int hidden = size * size - board.getRevealedSafeCount() - board.getRevealedMineCount();
         int minesLeft = board.getTotalMines() - board.getRevealedMineCount();
+        // Use global density only when no neighboring revealed clue constrains the cell.
         double globalDensity = hidden > 0 ? Math.max(0, minesLeft) / (double) hidden : 1.0;
 
         HintResult best = null;

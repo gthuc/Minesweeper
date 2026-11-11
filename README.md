@@ -1,40 +1,40 @@
 # Minesweeper (Java)
 
-Minesweeper dòng lệnh, dùng các pattern: Singleton, Command, State, Strategy, Observer, Factory.
+Command-line Minesweeper using the Singleton, Command, State, Strategy, Observer, and Factory patterns.
 
-## Cấu trúc
+## Project structure
 
-- `src/model` – ô, bàn cờ (flood fill, sinh mìn sau click đầu, bộ đếm O(1))
-- `src/command` – Reveal/Flag + Undo (lật trúng mìn **không** undo được)
-- `src/state` – Playing / Paused / Inactive (Not started, Won, Lost)
-- `src/hint` – gợi ý chắc chắn (`SafeHintStrategy`) và ước lượng xác suất (`IntelligentHintStrategy`)
-- `src/storage` – bảng điểm lưu file `leaderboard.dat`
-- `src/view` – `ConsoleView` (Observer)
-- `src/controller` – `GameManager` (timer, luật 3 mạng, ghi điểm) và `Main`
-- `test/GameTests.java` – test không cần JUnit
+- `src/model` - Cells and board (flood fill, mine generation after the first click, O(1) counters)
+- `src/command` - Reveal/Flag and Undo (revealing a mine **cannot** be undone)
+- `src/state` - Playing / Paused / Inactive (Not started, Won, Lost)
+- `src/hint` - Certain hints (`SafeHintStrategy`) and probability estimates (`IntelligentHintStrategy`)
+- `src/storage` - Leaderboard stored in `leaderboard.dat`
+- `src/view` - `ConsoleView` (Observer)
+- `src/controller` - `GameManager` (timer, three-life rule, score recording) and `Main`
+- `test/GameTests.java` - Tests without JUnit
 
-## Chạy game
+## Run the game
 
 ```bash
 javac -encoding UTF-8 -d out -sourcepath src src/controller/Main.java
 java -cp out controller.Main
 ```
 
-Trên Windows nếu tiếng Việt bị lỗi font: `chcp 65001` trước khi chạy.
+On Windows, run `chcp 65001` first if Unicode text is displayed incorrectly.
 
-Lệnh trong game: `r <hàng> <cột>` lật, `f <hàng> <cột>` cờ, `u` undo, `h` gợi ý,
-`p` tạm dừng/tiếp tục, `n [easy|medium|hard|custom <size> <mines>]` ván mới,
-`t` đổi giao diện, `name <tên>`, `l` bảng điểm, `q` thoát.
+Game commands: `r <row> <col>` reveal, `f <row> <col>` flag, `u` undo, `h` hint,
+`p` pause/resume, `n [easy|medium|hard|custom <size> <mines>]` new game,
+`t` switch theme, `name <name>`, `l` leaderboard, `q` quit.
 
-## Chạy test
+## Run the tests
 
 ```bash
 javac -encoding UTF-8 -d out -sourcepath src test/GameTests.java
 java -cp out GameTests
 ```
 
-## Luật
+## Rules
 
-- 3 mạng: lật trúng mìn thứ 3 là thua; thắng khi lật hết ô an toàn.
-- Bảng điểm chỉ ghi khi thắng ở EASY / MEDIUM / HARD (CUSTOM không so sánh được).
-- Xếp hạng: ít mìn nổ hơn → thời gian ngắn hơn → không dùng gợi ý.
+- Three lives: hitting a third mine ends the game; reveal all safe cells to win.
+- Only wins on EASY / MEDIUM / HARD are recorded on the leaderboard (CUSTOM games are not comparable).
+- Ranking: fewer mine hits, then shorter time, then no hints used.

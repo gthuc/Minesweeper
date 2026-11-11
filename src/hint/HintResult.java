@@ -1,5 +1,9 @@
 package hint;
 
+/**
+ * Describes a suggested cell, its certainty category, and whether it is flagged.
+ * This result does not reveal or flag the cell by itself.
+ */
 public class HintResult {
     private final int x;
     private final int y;
@@ -17,13 +21,19 @@ public class HintResult {
         this.onFlaggedCell = onFlaggedCell;
     }
 
-    public int getX() { return x; }
-    public int getY() { return y; }
-    public HintType getType() { return type; }
+    public int getX() {
+        return x;
+    }
 
+    public int getY() {
+        return y;
+    }
 
+    public HintType getType() {
+        return type;
+    }
 
-
-
-    public boolean isOnFlaggedCell() { return onFlaggedCell; }
+    public boolean isOnFlaggedCell() {
+        return onFlaggedCell;
+    }
 }

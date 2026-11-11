@@ -3,6 +3,9 @@ package factory;
 import model.CellModel;
 import model.ThemeCell;
 
+/**
+ * Creates themed cells without changing board generation or game rules.
+ */
 public class ThemeBoardFactory implements ICellFactory {
     @Override
     public CellModel createCell() {

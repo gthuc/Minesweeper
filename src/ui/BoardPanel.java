@@ -14,10 +14,14 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+/**
+ * Renders board cells and routes mouse input to the game manager.
+ * Board observer callbacks refresh existing buttons; callers rebuild the grid for
+ * new games and must use the Swing event dispatch thread for UI operations.
+ */
 public class BoardPanel extends JPanel implements IGameBoardObserver {
     private GameManager gameManager;
     private CellButton[][] cellButtons;
-
 
     private static final Font EMOJI_FONT = new Font("Segoe UI Emoji", Font.PLAIN, 16);
     private static final Font TEXT_FONT = new Font("SansSerif", Font.BOLD, 14);
@@ -26,6 +30,9 @@ public class BoardPanel extends JPanel implements IGameBoardObserver {
         this.gameManager = gameManager;
     }
 
+    /**
+     * Rebuilds the button grid for the current board and installs input listeners.
+     */
     public void initializeBoard() {
         this.removeAll();
 
@@ -41,11 +48,11 @@ public class BoardPanel extends JPanel implements IGameBoardObserver {
                     for (int c = 0; c < size; c++) {
                         CellButton btn = new CellButton(r, c);
 
-
                         btn.setOpaque(true);
                         btn.setContentAreaFilled(true);
                         btn.setFocusPainted(false);
 
+                        // Send coordinates to the controller; the view does not mutate cell state directly.
                         btn.addMouseListener(new MouseAdapter() {
                             @Override
                             public void mousePressed(MouseEvent e) {
@@ -67,6 +74,9 @@ public class BoardPanel extends JPanel implements IGameBoardObserver {
         this.repaint();
     }
 
+    /**
+     * Refreshes button appearance from model state after a board mutation.
+     */
     @Override
     public void onBoardChange(BoardEvent event) {
         if (gameManager != null && gameManager.getGameBoard() != null && cellButtons != null) {
@@ -135,6 +145,9 @@ public class BoardPanel extends JPanel implements IGameBoardObserver {
         }
     }
 
+    /**
+     * Colors the suggested cell without revealing it or changing board state.
+     */
     public void highlightHint(HintResult hint) {
         if (hint == null || cellButtons == null) return;
         int r = hint.getX();

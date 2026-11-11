@@ -1,9 +1,16 @@
 package util;
 
-
+/**
+ * Escapes strings as JSON values without a third-party JSON dependency.
+ */
 public final class Json {
-    private Json() {}
+    private Json() {
+    }
 
+    /**
+     * Returns a quoted, escaped JSON string, or the literal null for null input.
+     * Control characters are escaped to keep the generated JSON valid.
+     */
     public static String quote(String s) {
         if (s == null) return "null";
         StringBuilder sb = new StringBuilder(s.length() + 2).append('"');

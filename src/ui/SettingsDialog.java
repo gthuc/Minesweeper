@@ -8,6 +8,10 @@ import settings.Theme;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * Edits a settings copy through form controls and submits validated changes.
+ * Input errors keep the dialog open so the player can correct them.
+ */
 public class SettingsDialog extends JDialog {
     private JTextField nameField;
     private JComboBox<DifficultyLevel> difficultyComboBox;
@@ -27,33 +31,27 @@ public class SettingsDialog extends JDialog {
         JPanel formPanel = new JPanel(new GridLayout(6, 2, 10, 10));
         formPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
-
         formPanel.add(new JLabel("👤 Player Name:"));
         nameField = new JTextField(settings.getPlayerName());
         formPanel.add(nameField);
-
 
         formPanel.add(new JLabel("🎯 Default Difficulty:"));
         difficultyComboBox = new JComboBox<>(DifficultyLevel.values());
         difficultyComboBox.setSelectedItem(settings.getDefaultDifficulty());
         formPanel.add(difficultyComboBox);
 
-
         formPanel.add(new JLabel("🎨 Theme:"));
         themeComboBox = new JComboBox<>(Theme.values());
         themeComboBox.setSelectedItem(settings.getTheme());
         formPanel.add(themeComboBox);
 
-
         formPanel.add(new JLabel("📐 Custom Size (Rows/Cols):"));
         sizeField = new JTextField(String.valueOf(settings.getCustomSize()));
         formPanel.add(sizeField);
 
-
         formPanel.add(new JLabel("💣 Custom Mines:"));
         minesField = new JTextField(String.valueOf(settings.getCustomMines()));
         formPanel.add(minesField);
-
 
         formPanel.add(new JLabel("🔊 Sound Enabled:"));
         soundCheckBox = new JCheckBox();
@@ -61,7 +59,6 @@ public class SettingsDialog extends JDialog {
         formPanel.add(soundCheckBox);
 
         add(formPanel, BorderLayout.CENTER);
-
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton saveButton = new JButton("💾 Save");
@@ -75,6 +72,9 @@ public class SettingsDialog extends JDialog {
         add(buttonPanel, BorderLayout.SOUTH);
     }
 
+    /**
+     * Parses form values and submits one validated settings update before closing.
+     */
     private void saveSettings() {
         try {
             int customSize = Integer.parseInt(sizeField.getText().trim());
@@ -83,7 +83,6 @@ public class SettingsDialog extends JDialog {
             DifficultyLevel diff = (DifficultyLevel) difficultyComboBox.getSelectedItem();
             Theme theme = (Theme) themeComboBox.getSelectedItem();
             boolean sound = soundCheckBox.isSelected();
-
 
             SettingsManager.getInstance().update(s -> {
                 s.setPlayerName(newName);

@@ -11,6 +11,10 @@ import settings.SettingsManager;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * Composes the board, status display, menus, and gameplay controls.
+ * Lifecycle events schedule dialogs and feedback on the Swing event dispatch thread.
+ */
 public class GameFrame extends JFrame implements IGameEventListener {
     private GameManager gameManager;
     private BoardPanel boardPanel;
@@ -72,6 +76,9 @@ public class GameFrame extends JFrame implements IGameEventListener {
         startNewGame(DifficultyLevel.EASY);
     }
 
+    /**
+     * Connects menu actions to game startup, preferences, scores, and application exit.
+     */
     private void setupMenuBar() {
         JMenuBar menuBar = new JMenuBar();
         JMenu gameMenu = new JMenu("🎮 Game");
@@ -85,10 +92,8 @@ public class GameFrame extends JFrame implements IGameEventListener {
         JMenuItem hardItem = new JMenuItem("🔴 New Game (HARD 24x24)");
         hardItem.addActionListener(e -> startNewGame(DifficultyLevel.HARD));
 
-
         JMenuItem customItem = new JMenuItem("⚙️ New Game (CUSTOM)");
         customItem.addActionListener(e -> startCustomGame());
-
 
         JMenuItem settingsItem = new JMenuItem("⚙️ Settings");
         settingsItem.addActionListener(e -> {
@@ -108,7 +113,7 @@ public class GameFrame extends JFrame implements IGameEventListener {
         gameMenu.add(easyItem);
         gameMenu.add(mediumItem);
         gameMenu.add(hardItem);
-        gameMenu.add(customItem);  
+        gameMenu.add(customItem);
         gameMenu.addSeparator();
         gameMenu.add(settingsItem);
         gameMenu.add(leaderboardItem);
@@ -119,6 +124,9 @@ public class GameFrame extends JFrame implements IGameEventListener {
         setJMenuBar(menuBar);
     }
 
+    /**
+     * Starts a preset game, rebuilds the grid, and sizes the window to its contents.
+     */
     private void startNewGame(DifficultyLevel difficulty) {
         if (difficulty == DifficultyLevel.CUSTOM) {
             startCustomGame();
@@ -132,7 +140,9 @@ public class GameFrame extends JFrame implements IGameEventListener {
         setLocationRelativeTo(null);
     }
 
-
+    /**
+     * Uses saved custom dimensions and displays validation errors to the player.
+     */
     private void startCustomGame() {
         Settings s = SettingsManager.getInstance().get();
         try {
@@ -147,6 +157,9 @@ public class GameFrame extends JFrame implements IGameEventListener {
         }
     }
 
+    /**
+     * Animates brief window movement with a Swing timer, then restores its location.
+     */
     public void shakeScreen() {
         Point originalLocation = getLocation();
         int shakeDistance = 8;
@@ -169,6 +182,9 @@ public class GameFrame extends JFrame implements IGameEventListener {
         timer.start();
     }
 
+    /**
+     * Schedules lifecycle feedback on the Swing thread, including dialogs and optional sound.
+     */
     @Override
     public void onGameEvent(GameEvent event, String message) {
         SwingUtilities.invokeLater(() -> {

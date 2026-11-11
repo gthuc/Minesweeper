@@ -7,17 +7,15 @@ import util.Json;
 import java.util.Collections;
 import java.util.List;
 
-
-
-
-
-
-
-
+/**
+ * Carries a view-oriented representation of game state without exposing cell objects.
+ * Rows use compact cell codes and are exposed through an unmodifiable list.
+ * The constructor wraps the supplied list, so its creator must not modify that list afterward.
+ */
 public final class GameSnapshot {
     public final GameStatus status;
-    public final boolean inGame;             
-    public final DifficultyLevel difficulty;  
+    public final boolean inGame;
+    public final DifficultyLevel difficulty;
     public final int size;
     public final int totalMines;
     public final int remainingMines;
@@ -28,8 +26,8 @@ public final class GameSnapshot {
     public final String theme;
     public final String mineSymbol;
     public final String flagSymbol;
-    public final List<String> rows;          
-    public final int lastRank;               
+    public final List<String> rows;
+    public final int lastRank;
 
     GameSnapshot(GameStatus status, boolean inGame, DifficultyLevel difficulty, int size, int totalMines,
                  int remainingMines, int lives, int maxLives, long elapsedSeconds, boolean hintUsed,
@@ -51,6 +49,9 @@ public final class GameSnapshot {
         this.lastRank = lastRank;
     }
 
+    /**
+     * Serializes snapshot fields and row codes into a JSON object.
+     */
     public String toJson() {
         StringBuilder sb = new StringBuilder("{");
         sb.append("\"status\":").append(Json.quote(status.name()));

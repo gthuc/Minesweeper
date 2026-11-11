@@ -2,6 +2,10 @@ package command;
 
 import model.GameBoardModel;
 
+/**
+ * Encapsulates a flag toggle for the Command pattern.
+ * Undo applies the same toggle, subject to the board rules.
+ */
 public class FlagCommand implements ICommand {
     private final int x, y;
     private final GameBoardModel board;
@@ -14,7 +18,7 @@ public class FlagCommand implements ICommand {
 
     @Override
     public boolean execute() {
-        return board.toggleFlag(x, y);  
+        return board.toggleFlag(x, y);
     }
 
     @Override

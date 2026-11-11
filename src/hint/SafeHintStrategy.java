@@ -6,9 +6,11 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-
+/**
+ * Finds certain moves using individual clues and subset differences.
+ * Deductions depend on revealed information, not the correctness of player flags.
+ */
 public class SafeHintStrategy implements IHintStrategy {
-
     @Override
     public HintResult getHintPosition(GameBoardModel board) {
         List<Constraint> constraints = Constraint.build(board);
@@ -19,7 +21,10 @@ public class SafeHintStrategy implements IHintStrategy {
         return level2(board, constraints);
     }
 
-
+    /**
+     * Uses single-clue rules: zero remaining mines means safe;
+     * a mine count equal to the hidden-set size means every member is a mine.
+     */
     private HintResult level1(GameBoardModel board, List<Constraint> constraints) {
         for (Constraint c : constraints) {
             if (c.remaining == 0) {
@@ -36,7 +41,9 @@ public class SafeHintStrategy implements IHintStrategy {
         return null;
     }
 
-
+    /**
+     * Subtracts a strict subset constraint from a larger one to classify the difference.
+     */
     private HintResult level2(GameBoardModel board, List<Constraint> constraints) {
         for (Constraint a : constraints) {
             for (Constraint b : constraints) {
@@ -44,6 +51,7 @@ public class SafeHintStrategy implements IHintStrategy {
 
                 Set<Integer> diff = new LinkedHashSet<>(b.cells);
                 diff.removeAll(a.cells);
+                // For A contained in B, mines(B minus A) = mines(B) minus mines(A).
                 int minesInDiff = b.remaining - a.remaining;
 
                 if (minesInDiff == 0) {
@@ -59,7 +67,9 @@ public class SafeHintStrategy implements IHintStrategy {
         return null;
     }
 
-
+    /**
+     * Avoids recommending a mine that the player has already flagged.
+     */
     private HintResult firstUnflaggedMine(GameBoardModel board, Constraint c, Set<Integer> codes) {
         for (int code : codes) {
             if (!board.getCell(c.x(code), c.y(code)).isFlagged()) {

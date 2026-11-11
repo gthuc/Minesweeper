@@ -7,7 +7,10 @@ import model.GameStatus;
 import observer.BoardEvent;
 import observer.IGameBoardObserver;
 
-
+/**
+ * Provides an observer-driven text view without owning input processing.
+ * Board events mark the view dirty; the caller decides when to render it.
+ */
 public class ConsoleView implements IGameBoardObserver {
     private boolean dirty;
 
@@ -16,28 +19,35 @@ public class ConsoleView implements IGameBoardObserver {
         dirty = true;
     }
 
+    /**
+     * Returns and clears the pending-refresh flag.
+     */
     public boolean consumeDirty() {
         boolean d = dirty;
         dirty = false;
         return d;
     }
 
+    /**
+     * Prints current visible information, hiding the board while paused.
+     * Mines and incorrect flags are exposed only after a loss.
+     */
     public void render(GameManager gm) {
         GameBoardModel board = gm.getGameBoard();
         if (board == null) {
-            System.out.println("Đang ở menu.");
+            System.out.println("Currently in the menu.");
             return;
         }
 
         GameStatus status = gm.getGameStatus();
         System.out.println();
-        System.out.println("[" + gm.getDifficultyLevel() + "] Trạng thái: " + status
-                + " | Thời gian: " + gm.getElapsedSeconds() + "s"
-                + " | Mạng: " + gm.getLivesRemaining()
-                + " | Mìn còn lại: " + board.getRemainingMines());
+        System.out.println("[" + gm.getDifficultyLevel() + "] Status: " + status
+                + " | Time: " + gm.getElapsedSeconds() + "s"
+                + " | Lives: " + gm.getLivesRemaining()
+                + " | Mines remaining: " + board.getRemainingMines());
 
         if (status == GameStatus.PAUSED) {
-            System.out.println("*** TẠM DỪNG - gõ 'p' để tiếp tục ***");
+            System.out.println("*** PAUSED - type 'p' to resume ***");
             return;
         }
 
@@ -57,13 +67,16 @@ public class ConsoleView implements IGameBoardObserver {
         System.out.print(sb);
     }
 
+    /**
+     * Maps model state to a display symbol without changing the cell.
+     */
     private String symbol(CellModel cell, boolean showMines) {
         if (cell.isRevealed()) {
             if (cell.isMine()) return cell.getMineSymbol();
             return cell.getAdjacentMinesCount() == 0 ? "." : String.valueOf(cell.getAdjacentMinesCount());
         }
         if (cell.isFlagged()) {
-            return (showMines && !cell.isMine()) ? "x" : cell.getFlagSymbol();  
+            return (showMines && !cell.isMine()) ? "x" : cell.getFlagSymbol();
         }
         return (showMines && cell.isMine()) ? cell.getMineSymbol() : "#";
     }

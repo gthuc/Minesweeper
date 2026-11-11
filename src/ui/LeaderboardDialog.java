@@ -1,4 +1,3 @@
-
 package ui;
 
 import model.DifficultyLevel;
@@ -12,8 +11,11 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Displays read-only score tables for preset difficulties.
+ * Clearing a selected leaderboard requires confirmation in the dialog.
+ */
 public class LeaderboardDialog extends JDialog {
-
     private JTabbedPane tabbedPane;
 
     public LeaderboardDialog(JFrame parent) {
@@ -39,6 +41,9 @@ public class LeaderboardDialog extends JDialog {
         add(bottomPanel, BorderLayout.SOUTH);
     }
 
+    /**
+     * Rebuilds score tabs while preserving the selected difficulty when possible.
+     */
     private void refreshTabs() {
         int currentIndex = tabbedPane.getSelectedIndex();
         tabbedPane.removeAll();
@@ -52,6 +57,9 @@ public class LeaderboardDialog extends JDialog {
         }
     }
 
+    /**
+     * Clears only the selected preset after explicit confirmation.
+     */
     private void clearSelectedLeaderboard() {
         int index = tabbedPane.getSelectedIndex();
         DifficultyLevel level;
@@ -77,6 +85,9 @@ public class LeaderboardDialog extends JDialog {
         }
     }
 
+    /**
+     * Builds a non-editable table from the manager-provided score order.
+     */
     private JPanel createTablePanel(DifficultyLevel level) {
         JPanel panel = new JPanel(new BorderLayout());
 

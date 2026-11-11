@@ -6,7 +6,10 @@ import model.GameBoardModel;
 import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * Selects hints by trying certain deductions before a risk-based fallback.
+ * The Singleton holds the ordered Strategy implementations and annotates flagged targets.
+ */
 public class HintSystem {
     private static HintSystem instance;
     private final List<IHintStrategy> strategies = new ArrayList<>();
@@ -23,9 +26,12 @@ public class HintSystem {
         return instance;
     }
 
+    /**
+     * Uses first-click protection before mine generation, then tries strategies in order.
+     * @return an annotated hint, or null if no candidate exists
+     */
     public HintResult getHint(GameBoardModel board) {
         if (board == null) return null;
-
 
         if (!board.isMinesGenerated()) {
             int mid = board.getSize() / 2;
@@ -38,7 +44,6 @@ public class HintSystem {
         }
         return null;
     }
-
 
     private HintResult annotate(GameBoardModel board, HintResult r) {
         CellModel cell = board.getCell(r.getX(), r.getY());

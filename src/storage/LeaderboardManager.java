@@ -9,6 +9,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Maintains at most ten ranked records per preset difficulty.
+ * Custom games are excluded. Records are located by object identity when renamed
+ * or when determining whether a newly added entry survived trimming.
+ */
 public class LeaderboardManager {
     public static final int MAX_ENTRIES = 10;
     private static LeaderboardManager instance;
@@ -29,16 +34,17 @@ public class LeaderboardManager {
         return instance;
     }
 
-
+    /**
+     * Replaces the singleton with injectable storage for isolated tests.
+     */
     public static synchronized void resetInstance(IScoreStorage storage) {
         instance = new LeaderboardManager(storage != null ? storage : new FileScoreStorage());
     }
 
-
-
-
-
-
+    /**
+     * Sorts and trims a preset leaderboard, then requests persistence.
+     * @return the retained one-based rank, or zero if excluded or outside the top ten
+     */
     public synchronized int addScore(DifficultyLevel level, ScoreRecord record) {
         if (level == null || level == DifficultyLevel.CUSTOM || record == null) return 0;
 
@@ -49,15 +55,13 @@ public class LeaderboardManager {
             scores.remove(scores.size() - 1);
         }
         storage.saveScores(leaderboards);
-        return indexOfIdentity(scores, record) + 1;  
+        return indexOfIdentity(scores, record) + 1;
     }
 
-
-
-
-
-
-
+    /**
+     * Replaces the exact retained record with a renamed copy, preserving performance.
+     * @return the replacement, or null if the target is not retained
+     */
     public synchronized ScoreRecord renameScore(DifficultyLevel level, ScoreRecord target, String newName) {
         String name = PlayerNames.normalize(newName);
         List<ScoreRecord> scores = leaderboards.get(level);
@@ -66,7 +70,7 @@ public class LeaderboardManager {
         if (idx < 0) return null;
 
         ScoreRecord renamed = target.withPlayerName(name);
-        scores.set(idx, renamed);  
+        scores.set(idx, renamed);
         storage.saveScores(leaderboards);
         return renamed;
     }
@@ -82,13 +86,18 @@ public class LeaderboardManager {
         storage.saveScores(leaderboards);
     }
 
-
+    /**
+     * Returns an unmodifiable copy so callers cannot reorder stored scores.
+     */
     public synchronized List<ScoreRecord> getTopScores(DifficultyLevel level) {
         List<ScoreRecord> scores = leaderboards.get(level);
         if (scores == null) return Collections.emptyList();
         return Collections.unmodifiableList(new ArrayList<>(scores));
     }
 
+    /**
+     * Matches the original entry by reference, not by equal performance values.
+     */
     private static int indexOfIdentity(List<ScoreRecord> list, ScoreRecord target) {
         for (int i = 0; i < list.size(); i++) {
             if (list.get(i) == target) return i;
