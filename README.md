@@ -5,7 +5,7 @@ Command-line Minesweeper using the Singleton, Command, State, Strategy, Observer
 ## Project structure
 
 - `src/model` - Cells and board (flood fill, mine generation after the first click, O(1) counters)
-- `src/command` - Reveal/Flag and Undo (revealing a mine **cannot** be undone)
+- `src/command` - Reveal/Flag and Undo (undoing a mine hit hides it and restores one life during active play)
 - `src/state` - Playing / Paused / Inactive (Not started, Won, Lost)
 - `src/hint` - World-based hints (`WorldHintStrategy`): Safe (green) or Mine (red), closest to opened cells; ties prefer more opened neighbors, then Safe. Flagged cells are skipped.
 - `src/storage` - Leaderboard stored in `data/leaderboard.dat` (the directory is created automatically when saving)

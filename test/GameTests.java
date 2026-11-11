@@ -76,7 +76,7 @@ public class GameTests {
         testHintFlaggedCells();
         testHintProximity();
         testHintColors();
-        testMineNotUndoable();
+        testMineUndo();
         testUndoSkipsNoOps();
         testDifficultyConfig();
         testSettings();
@@ -266,14 +266,17 @@ public class GameTests {
         });
     }
 
-    static void testMineNotUndoable() {
+    static void testMineUndo() {
         GameBoardModel b = board(9, 10, 7);
         b.revealCell(4, 4);
         int mx = -1, my = -1;
         for (int i = 0; i < 9 && mx < 0; i++) for (int j = 0; j < 9; j++) if (b.getCell(i, j).isMine()) { mx = i; my = j; break; }
         RevealCommand mine = new RevealCommand(b, mx, my);
         mine.execute();
-        check(!mine.isUndoable(), "revealing a mine cannot be undone");
+        check(mine.isUndoable() && mine.undo() && !b.getCell(mx, my).isRevealed()
+                        && b.getCell(mx, my).isMine() && b.getRevealedMineCount() == 0,
+                "undo hides a revealed mine and restores its counter without moving it");
+        check(!mine.undo(), "undoing the same reveal twice does not restore extra lives");
     }
 
     static void testUndoSkipsNoOps() {
@@ -282,15 +285,31 @@ public class GameTests {
         gm.startGame(DifficultyLevel.EASY);
         GameBoardModel b = gm.getGameBoard();
         gm.reveal(4, 4);
+        int safeCount = b.getRevealedSafeCount();
+        List<GameEvent> events = new ArrayList<>();
+        IGameEventListener listener = (e, m) -> events.add(e);
+        gm.registerEventListener(listener);
         int mx = -1, my = -1;
         for (int i = 0; i < 9 && mx < 0; i++) for (int j = 0; j < 9; j++) if (b.getCell(i, j).isMine()) { mx = i; my = j; break; }
         gm.toggleFlag(mx, my);
         gm.toggleFlag(mx, my);
         gm.reveal(mx, my);
+        gm.reveal(mx, my); // An ineffective repeat must not enter history.
+        check(gm.getLivesRemaining() == 2 && b.getRemainingMines() == 9, "mine hit costs one life");
         boolean undone = gm.undo();
-        check(undone && b.getRevealedSafeCount() == 0 && b.getRevealedMineCount() == 1,
-                "undo skips ineffective commands and reverses a reveal without restoring lost lives");
+        check(undone && b.getRevealedSafeCount() == safeCount && b.getRevealedMineCount() == 0
+                        && gm.getLivesRemaining() == 3 && b.getRemainingMines() == 10
+                        && !b.getCell(mx, my).isRevealed(),
+                "undo skips ineffective actions and reverses the latest mine hit, restoring a life");
+        gm.reveal(mx, my);
+        check(gm.getLivesRemaining() == 2 && java.util.Collections.frequency(events, GameEvent.LIFE_LOST) == 2,
+                "hitting the mine again costs a life and emits LIFE_LOST again");
+        check(gm.undo() && gm.getLivesRemaining() == 3, "mine hits can be undone repeatedly without exceeding three lives");
+        check(gm.undo() && b.getCell(mx, my).isFlagged(), "next undo restores the previous flag");
+        check(gm.undo() && !b.getCell(mx, my).isFlagged(), "following undo reverses flag placement");
+        check(gm.undo() && b.getRevealedSafeCount() == 0, "following undo reverses the original flood fill");
         check(!gm.undo(), "undo returns false when no commands remain");
+        gm.removeEventListener(listener);
     }
 
     static void testDifficultyConfig() {
@@ -511,11 +530,13 @@ public class GameTests {
                 hits++;
                 if (hits == 1) {
                     gm.undo();
-                    check(b.getRevealedMineCount() == 1, "undo does not restore lost lives");
+                    check(b.getRevealedMineCount() == 0 && gm.getLivesRemaining() == 3, "undo restores a lost life");
+                    gm.handleCellAction(new RevealCommand(b, i, j));
                 }
             }
         }
         check(gm.getGameStatus() == GameStatus.LOST, "hitting three mines sets LOST");
+        check(!gm.undo() && gm.getLivesRemaining() == 0, "undo remains disabled after losing");
         check(LeaderboardManager.getInstance().getTopScores(DifficultyLevel.EASY).size() == 1, "losing does not record a score");
 
         boolean threw = false;

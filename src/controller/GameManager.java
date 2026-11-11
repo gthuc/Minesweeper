@@ -248,7 +248,12 @@ public class GameManager {
      * @return true if a command was reversed
      */
     public synchronized boolean undo() {
-        return currentState.undo(this);
+        boolean undone = currentState.undo(this);
+        if (undone && gameBoard != null) {
+            // A restored life must allow the next mine hit to emit LIFE_LOST again.
+            lastReportedMinesHit = gameBoard.getRevealedMineCount();
+        }
+        return undone;
     }
 
     public synchronized void pause() {

@@ -161,7 +161,7 @@ public class GameBoardModel implements IGameBoardSubject {
 
     /**
      * Hides supplied revealed cells and restores counters.
-     * Mine-hit exclusion is enforced by CommandManager, not by this low-level method.
+     * Hiding a mine restores its contribution to the remaining-life and mine counters.
      * @return true if at least one cell changed
      */
     public boolean undoReveal(List<int[]> affectedCoords) {
