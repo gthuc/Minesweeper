@@ -6,7 +6,7 @@ import model.GameBoardModel;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Chuỗi chiến lược: thử lần lượt cho tới khi có strategy trả về gợi ý. */
+
 public class HintSystem {
     private static HintSystem instance;
     private final List<IHintStrategy> strategies = new ArrayList<>();
@@ -26,7 +26,7 @@ public class HintSystem {
     public HintResult getHint(GameBoardModel board) {
         if (board == null) return null;
 
-        // Chưa click lần đầu: mìn chưa được sinh, và ô đầu tiên luôn an toàn.
+
         if (!board.isMinesGenerated()) {
             int mid = board.getSize() / 2;
             return annotate(board, new HintResult(mid, mid, HintType.CERTAIN_SAFE));
@@ -39,7 +39,7 @@ public class HintSystem {
         return null;
     }
 
-    /** Gắn thông tin "ô này đang có cờ" để UI nhắc gỡ cờ. */
+
     private HintResult annotate(GameBoardModel board, HintResult r) {
         CellModel cell = board.getCell(r.getX(), r.getY());
         boolean flagged = cell != null && cell.isFlagged();

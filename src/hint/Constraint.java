@@ -8,15 +8,15 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-/**
- * Ràng buộc sinh ra từ một ô số đã lật: trong tập các ô "chưa biết" xung quanh
- * có đúng {@code remaining} mìn.
- *
- * Quan trọng: mìn đã nổ (đã lật) được trừ vào số mìn của ô số, và cờ do người
- * chơi cắm KHÔNG được tin tưởng (có thể cắm sai) nên ô có cờ vẫn là "chưa biết".
- */
+
+
+
+
+
+
+
 class Constraint {
-    final Set<Integer> cells;   // mã hoá x * size + y
+    final Set<Integer> cells;    
     final int remaining;
     private final int size;
 

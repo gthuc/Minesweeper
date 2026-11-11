@@ -7,17 +7,17 @@ import util.Json;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Ảnh chụp trạng thái ván chơi để gửi cho UI/API. Bất biến và KHÔNG làm lộ mìn:
- * mìn chưa lật chỉ xuất hiện trong {@code rows} khi đã thua.
- *
- * Mã ô trong rows: '#' chưa lật, 'F' cờ, 'X' cờ sai (chỉ khi thua), '*' mìn,
- * '.' ô trống (0), '1'..'8' ô số.
- */
+
+
+
+
+
+
+
 public final class GameSnapshot {
     public final GameStatus status;
-    public final boolean inGame;            // false = đang ở menu
-    public final DifficultyLevel difficulty; // null nếu chưa chơi ván nào
+    public final boolean inGame;             
+    public final DifficultyLevel difficulty;  
     public final int size;
     public final int totalMines;
     public final int remainingMines;
@@ -28,8 +28,8 @@ public final class GameSnapshot {
     public final String theme;
     public final String mineSymbol;
     public final String flagSymbol;
-    public final List<String> rows;         // rỗng khi ở menu hoặc đang tạm dừng
-    public final int lastRank;              // hạng ván vừa thắng, 0 nếu không có
+    public final List<String> rows;          
+    public final int lastRank;               
 
     GameSnapshot(GameStatus status, boolean inGame, DifficultyLevel difficulty, int size, int totalMines,
                  int remainingMines, int lives, int maxLives, long elapsedSeconds, boolean hintUsed,

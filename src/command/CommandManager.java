@@ -17,18 +17,18 @@ public class CommandManager {
     }
 
     public synchronized void executeCommand(ICommand command) {
-        // Chỉ lưu vào history nếu lệnh có tác dụng VÀ undo được
+
         if (command.execute() && command.isUndoable()) {
             history.push(command);
         }
     }
 
-    /**
-     * Hoàn tác lệnh gần nhất THỰC SỰ có tác dụng. Lệnh nào undo mà không đổi gì
-     * (vd: ô đó sau đó đã nổ mìn) bị bỏ qua để người chơi không bấm undo "vô hình".
-     *
-     * @return true nếu có thay đổi nào được hoàn tác.
-     */
+
+
+
+
+
+
     public synchronized boolean undo() {
         while (!history.isEmpty()) {
             if (history.pop().undo()) return true;
@@ -36,7 +36,7 @@ public class CommandManager {
         return false;
     }
 
-    /** Gọi khi bắt đầu ván mới / về menu để Undo không tác động lên bàn cờ cũ. */
+
     public synchronized void clear() {
         history.clear();
     }

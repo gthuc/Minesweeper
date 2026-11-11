@@ -15,15 +15,15 @@ public class PlayingState implements IGameState {
     @Override
     public void handleCommand(GameManager context, ICommand command) {
         CommandManager.getInstance().executeCommand(command);
-        context.checkWinCondition(); // có thể chuyển sang InactiveState
+        context.checkWinCondition();  
     }
 
     @Override
     public HintResult useHint(GameManager context) {
         GameBoardModel board = context.getGameBoard();
         HintResult result = HintSystem.getInstance().getHint(board);
-        // Chỉ tính là "đã dùng gợi ý" khi gợi ý thật sự dựa trên bàn cờ. Trước click đầu
-        // gợi ý chỉ là "click vào giữa", không đáng bị phạt thứ hạng.
+
+
         if (result != null && board != null && board.isMinesGenerated()) {
             context.setHintUsed(true);
         }

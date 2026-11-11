@@ -29,7 +29,7 @@ public class GameBoardModel implements IGameBoardSubject {
         this(factory, new Random());
     }
 
-    /** Cho phép truyền Random có seed để test lặp lại được. */
+
     public GameBoardModel(ICellFactory factory, Random random) {
         this.factory = factory;
         this.random = random;
@@ -52,13 +52,13 @@ public class GameBoardModel implements IGameBoardSubject {
         }
     }
 
-    // ---------- Truy vấn ----------
+
 
     public CellModel getCell(int x, int y) {
         return isValidCoordinate(x, y) ? cells[x][y] : null;
     }
 
-    /** Các ô lân cận hợp lệ (đã loại ô ngoài biên) dưới dạng {x, y}. */
+
     public List<int[]> getNeighbors(int x, int y) {
         List<int[]> result = new ArrayList<>(8);
         for (int dx = -1; dx <= 1; dx++) {
@@ -72,7 +72,7 @@ public class GameBoardModel implements IGameBoardSubject {
         return result;
     }
 
-    /** 0 nếu chưa initialize. */
+
     public int getSize() { return cells == null ? 0 : cells.length; }
     public int getTotalMines() { return totalMines; }
     public int getFlagCount() { return flagCount; }
@@ -80,17 +80,17 @@ public class GameBoardModel implements IGameBoardSubject {
     public int getRevealedMineCount() { return revealedMineCount; }
     public boolean isMinesGenerated() { return minesGenerated; }
 
-    /** Số mìn ước tính còn lại = tổng mìn - cờ đã cắm - mìn đã nổ (không bao giờ âm). */
+
     public int getRemainingMines() {
         return Math.max(0, totalMines - flagCount - revealedMineCount);
     }
 
-    // ---------- Hành động ----------
 
-    /**
-     * Bật/tắt cờ. Trả về true nếu trạng thái thực sự thay đổi.
-     * Không cho cắm quá số mìn CÒN LẠI (mìn đã nổ không còn cần cờ).
-     */
+
+
+
+
+
     public boolean toggleFlag(int x, int y) {
         CellModel cell = getCell(x, y);
         if (cell == null || cell.isRevealed()) return false;
@@ -106,7 +106,7 @@ public class GameBoardModel implements IGameBoardSubject {
         List<int[]> affected = new ArrayList<>();
         CellModel cell = getCell(x, y);
         if (cell == null || cell.isRevealed() || cell.isFlagged()) {
-            return affected; // không thay đổi gì, không notify
+            return affected;  
         }
 
         if (!minesGenerated) {
@@ -125,7 +125,7 @@ public class GameBoardModel implements IGameBoardSubject {
         return affected;
     }
 
-    /** @return true nếu có ô nào thực sự được úp lại. */
+
     public boolean undoReveal(List<int[]> affectedCoords) {
         if (affectedCoords == null || affectedCoords.isEmpty()) return false;
         boolean changed = false;
@@ -141,7 +141,7 @@ public class GameBoardModel implements IGameBoardSubject {
         return changed;
     }
 
-    // ---------- Thuật toán ----------
+
 
     private void markRevealed(CellModel cell) {
         cell.setRevealed(true);
@@ -166,10 +166,10 @@ public class GameBoardModel implements IGameBoardSubject {
         return revealed;
     }
 
-    /**
-     * Đặt mìn ngẫu nhiên, tránh ô click đầu và 8 ô xung quanh (nếu còn đủ chỗ).
-     * Dùng danh sách ứng viên + shuffle nên không bao giờ lặp vô hạn.
-     */
+
+
+
+
     private void generateMines(int mines, int firstX, int firstY) {
         List<int[]> candidates = new ArrayList<>();
         List<int[]> nearFirst = new ArrayList<>();
@@ -215,7 +215,7 @@ public class GameBoardModel implements IGameBoardSubject {
         return cells != null && x >= 0 && x < cells.length && y >= 0 && y < cells.length;
     }
 
-    // ---------- IGameBoardSubject ----------
+
 
     @Override
     public void registerObserver(IGameBoardObserver observer) {
@@ -231,7 +231,7 @@ public class GameBoardModel implements IGameBoardSubject {
 
     @Override
     public void notifyObservers(BoardEvent event) {
-        // Duyệt trên bản sao để observer có thể tự gỡ đăng ký khi đang được gọi.
+
         for (IGameBoardObserver observer : new ArrayList<>(observers)) {
             observer.onBoardChange(event);
         }

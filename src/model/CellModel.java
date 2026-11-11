@@ -16,9 +16,9 @@ public abstract class CellModel {
     public void setRevealed(boolean revealed) { this.revealed = revealed; }
     public void setFlagged(boolean flagged) { this.flagged = flagged; }
 
-    /** Ký hiệu hiển thị của mìn theo giao diện (Classic / Theme). */
+
     public abstract String getMineSymbol();
 
-    /** Ký hiệu hiển thị của cờ theo giao diện (Classic / Theme). */
+
     public abstract String getFlagSymbol();
 }

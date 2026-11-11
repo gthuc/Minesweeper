@@ -1,4 +1,4 @@
-// File: src/ui/CellButton.java
+
 package ui;
 import javax.swing.*;
 import java.awt.*;
@@ -15,11 +15,11 @@ public class CellButton extends JButton {
         setFocusPainted(false);
         setFont(new Font("Arial", Font.BOLD, 14));
 
-        // --- FIX LỖI TÀNG HÌNH MÀU NỀN TRÊN MACOS ---
-        setOpaque(true); // Cho phép nút được tô màu toàn bộ
-        setContentAreaFilled(true); // Đổ màu vào phần ruột nút
-        setBorder(BorderFactory.createLineBorder(Color.GRAY)); // Bo viền vuông vắn cho giống ô mìn
-        // --------------------------------------------
+
+        setOpaque(true);  
+        setContentAreaFilled(true);  
+        setBorder(BorderFactory.createLineBorder(Color.GRAY));  
+
     }
 
     public int getRow() { return row; }

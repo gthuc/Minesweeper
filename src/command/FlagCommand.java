@@ -14,7 +14,7 @@ public class FlagCommand implements ICommand {
 
     @Override
     public boolean execute() {
-        return board.toggleFlag(x, y); // false -> không vào history
+        return board.toggleFlag(x, y);  
     }
 
     @Override

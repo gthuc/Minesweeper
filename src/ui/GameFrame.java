@@ -85,10 +85,10 @@ public class GameFrame extends JFrame implements IGameEventListener {
         JMenuItem hardItem = new JMenuItem("🔴 New Game (HARD 24x24)");
         hardItem.addActionListener(e -> startNewGame(DifficultyLevel.HARD));
 
-        // --- BỔ SUNG NÚT NEW GAME (CUSTOM) ---
+
         JMenuItem customItem = new JMenuItem("⚙️ New Game (CUSTOM)");
         customItem.addActionListener(e -> startCustomGame());
-        // -------------------------------------
+
 
         JMenuItem settingsItem = new JMenuItem("⚙️ Settings");
         settingsItem.addActionListener(e -> {
@@ -108,7 +108,7 @@ public class GameFrame extends JFrame implements IGameEventListener {
         gameMenu.add(easyItem);
         gameMenu.add(mediumItem);
         gameMenu.add(hardItem);
-        gameMenu.add(customItem); // Thêm vào Menu
+        gameMenu.add(customItem);  
         gameMenu.addSeparator();
         gameMenu.add(settingsItem);
         gameMenu.add(leaderboardItem);
@@ -132,7 +132,7 @@ public class GameFrame extends JFrame implements IGameEventListener {
         setLocationRelativeTo(null);
     }
 
-    // Hàm tạo ván mới theo cấu hình Custom từ Settings
+
     private void startCustomGame() {
         Settings s = SettingsManager.getInstance().get();
         try {

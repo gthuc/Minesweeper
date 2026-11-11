@@ -1,6 +1,6 @@
 package util;
 
-/** Tiện ích JSON tối thiểu, đủ cho DTO của project (không cần thư viện ngoài). */
+
 public final class Json {
     private Json() {}
 

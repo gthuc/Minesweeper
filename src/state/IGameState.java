@@ -5,7 +5,7 @@ import controller.GameManager;
 import hint.HintResult;
 import model.GameStatus;
 
-/** Mặc định mọi thao tác đều bị bỏ qua; mỗi state chỉ override những gì nó cho phép. */
+
 public interface IGameState {
     GameStatus getStatus();
 
@@ -13,7 +13,7 @@ public interface IGameState {
 
     default HintResult useHint(GameManager context) { return null; }
 
-    /** @return true nếu có thay đổi được hoàn tác. */
+
     default boolean undo(GameManager context) { return false; }
 
     default void pause(GameManager context) {}

@@ -21,9 +21,9 @@ public class HintResult {
     public int getY() { return y; }
     public HintType getType() { return type; }
 
-    /**
-     * true nếu ô được gợi ý đang có cờ của người chơi. Lật ô có cờ bị bỏ qua,
-     * nên UI phải nhắc người chơi gỡ cờ trước.
-     */
+
+
+
+
     public boolean isOnFlaggedCell() { return onFlaggedCell; }
 }

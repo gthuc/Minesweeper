@@ -19,7 +19,7 @@ public class FileScoreStorage implements IScoreStorage {
 
     private final Path path;
 
-    /** Đường dẫn lấy từ system property "minesweeper.scores" nếu có (tiện cho test). */
+
     public FileScoreStorage() {
         this(System.getProperty("minesweeper.scores", DEFAULT_PATH));
     }
@@ -30,7 +30,7 @@ public class FileScoreStorage implements IScoreStorage {
 
     @Override
     public void saveScores(Map<DifficultyLevel, List<ScoreRecord>> scores) {
-        // Ghi ra file tạm rồi đổi tên: nếu lỗi giữa chừng thì file cũ không bị hỏng.
+
         Path tmp = Paths.get(path.toString() + ".tmp");
         try {
             try (ObjectOutputStream oos = new ObjectOutputStream(Files.newOutputStream(tmp))) {
@@ -50,12 +50,12 @@ public class FileScoreStorage implements IScoreStorage {
     @SuppressWarnings("unchecked")
     public Map<DifficultyLevel, List<ScoreRecord>> loadScores() {
         if (!Files.exists(path)) {
-            return new HashMap<>(); // lần chạy đầu tiên: bình thường
+            return new HashMap<>();  
         }
         try (ObjectInputStream ois = new ObjectInputStream(Files.newInputStream(path))) {
             return (Map<DifficultyLevel, List<ScoreRecord>>) ois.readObject();
         } catch (IOException | ClassNotFoundException | ClassCastException e) {
-            // File hỏng: giữ lại bản sao thay vì lặng lẽ ghi đè mất dữ liệu cũ.
+
             Path backup = Paths.get(path.toString() + ".corrupt");
             try {
                 Files.move(path, backup, StandardCopyOption.REPLACE_EXISTING);

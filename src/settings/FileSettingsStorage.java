@@ -13,13 +13,13 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Properties;
 
-/** Lưu dạng .properties (UTF-8) cho dễ đọc/sửa tay; giá trị sai sẽ rơi về mặc định. */
+
 public class FileSettingsStorage implements ISettingsStorage {
     private static final String DEFAULT_PATH = "settings.properties";
 
     private final Path path;
 
-    /** Đường dẫn lấy từ system property "minesweeper.settings" nếu có (tiện cho test). */
+
     public FileSettingsStorage() {
         this(System.getProperty("minesweeper.settings", DEFAULT_PATH));
     }
@@ -41,7 +41,7 @@ public class FileSettingsStorage implements ISettingsStorage {
             return s;
         }
 
-        // Từng khoá độc lập: một giá trị hỏng không làm mất các giá trị còn lại.
+
         try { s.setTheme(Theme.valueOf(p.getProperty("theme").trim().toUpperCase())); } catch (RuntimeException ignored) {}
         try { s.setPlayerName(p.getProperty("playerName")); } catch (RuntimeException ignored) {}
         try { s.setDefaultDifficulty(DifficultyLevel.valueOf(p.getProperty("defaultDifficulty").trim().toUpperCase())); } catch (RuntimeException ignored) {}

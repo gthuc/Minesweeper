@@ -26,21 +26,21 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.LongSupplier;
 
-/**
- * Single entry point for the backend. All public methods are synchronized for thread safety.
- * UI receives notifications via {@link IGameEventListener} and reads state via {@link #getSnapshot()}.
- */
+
+
+
+
 public class GameManager {
     public static final int MAX_MINES_HIT = 3;
 
     private static GameManager instance;
 
-    private GameBoardModel gameBoard;       // null = at menu
-    private DifficultyLevel difficultyLevel; // last game configuration (for restart)
+    private GameBoardModel gameBoard;        
+    private DifficultyLevel difficultyLevel;  
     private int size;
     private int mineCount;
     private Theme activeTheme = Theme.CLASSIC;
-    private IGameState currentState = new InactiveState(GameStatus.NOT_STARTED); // single source of truth for state
+    private IGameState currentState = new InactiveState(GameStatus.NOT_STARTED);  
     private final List<IGameBoardObserver> boardObservers = new ArrayList<>();
     private final List<IGameEventListener> eventListeners = new ArrayList<>();
 
@@ -49,7 +49,7 @@ public class GameManager {
     private ScoreRecord lastRecord;
     private int lastRank;
 
-    // Timer: runs only during PLAYING state after first click. Uses monotonic clock (nanoTime).
+
     private LongSupplier clock = System::nanoTime;
     private boolean timerStarted;
     private boolean running;
@@ -65,9 +65,9 @@ public class GameManager {
         return instance;
     }
 
-    // ---------- Menu / Start / End ----------
 
-    /** "Play" button: starts a game based on difficulty and settings. */
+
+
     public synchronized void startConfiguredGame() {
         Settings s = SettingsManager.getInstance().get();
         DifficultyLevel d = s.getDefaultDifficulty();
@@ -78,7 +78,7 @@ public class GameManager {
         }
     }
 
-    /** Start a game with fixed difficulty (EASY/MEDIUM/HARD). CUSTOM must use the 3-parameter version. */
+
     public synchronized void startGame(DifficultyLevel difficulty) {
         if (difficulty == DifficultyLevel.CUSTOM) {
             throw new IllegalArgumentException("CUSTOM difficulty requires size and mine count.");
@@ -99,7 +99,7 @@ public class GameManager {
         }
     }
 
-    /** Restart using the configuration of the last game. */
+
     public synchronized void restart() {
         if (difficultyLevel == null) {
             throw new IllegalStateException("No previous game to restart.");
@@ -107,7 +107,7 @@ public class GameManager {
         beginGame(difficultyLevel, size, mineCount);
     }
 
-    /** Abandon the current game (if any) and return to menu. Does not record score. */
+
     public synchronized void exitToMenu() {
         stopTimer();
         CommandManager.getInstance().clear();
@@ -123,7 +123,7 @@ public class GameManager {
     }
 
     private void beginGame(DifficultyLevel difficulty, int newSize, int newMines) {
-        // Create the board first: if it fails, current state is untouched.
+
         Theme theme = SettingsManager.getInstance().get().getTheme();
         GameBoardModel board = new GameBoardModel(theme.createFactory());
         board.initialize(newSize, newMines);
@@ -151,9 +151,9 @@ public class GameManager {
                 + ", " + mineCount + " mines).");
     }
 
-    /** Internal use only (via checkWinCondition) so external callers cannot force a win. */
+
     private void endGame(boolean isWin) {
-        if (getGameStatus() != GameStatus.PLAYING) return; // prevent double end/score recording
+        if (getGameStatus() != GameStatus.PLAYING) return;  
         transitionTo(new InactiveState(isWin ? GameStatus.WON : GameStatus.LOST));
         if (isWin) {
             recordScore();
@@ -164,7 +164,7 @@ public class GameManager {
         }
     }
 
-    /** Only record scores for fixed difficulties; CUSTOM sizes vary too much to compare. */
+
     private void recordScore() {
         lastRecord = null;
         lastRank = 0;
@@ -179,7 +179,7 @@ public class GameManager {
         }
     }
 
-    /** Rename the record of the last win (e.g., player enters name after winning). */
+
     public synchronized boolean renameLastScore(String newName) {
         if (lastRecord == null || difficultyLevel == null) return false;
         ScoreRecord renamed = LeaderboardManager.getInstance().renameScore(difficultyLevel, lastRecord, newName);
@@ -188,15 +188,15 @@ public class GameManager {
         return true;
     }
 
-    // ---------- Actions (delegated to State) ----------
 
-    /** Reveal a cell. Ignored if at menu. Better to use this than creating a RevealCommand externally. */
+
+
     public synchronized void reveal(int x, int y) {
         if (gameBoard == null) return;
         handleCellAction(new RevealCommand(gameBoard, x, y));
     }
 
-    /** Toggle flag. Ignored if at menu. */
+
     public synchronized void toggleFlag(int x, int y) {
         if (gameBoard == null) return;
         handleCellAction(new FlagCommand(gameBoard, x, y));
@@ -206,7 +206,7 @@ public class GameManager {
         if (command == null) return;
         currentState.handleCommand(this, command);
 
-        // Timer starts from the first click
+
         if (!timerStarted && gameBoard != null && gameBoard.isMinesGenerated()
                 && getGameStatus() == GameStatus.PLAYING) {
             timerStarted = true;
@@ -218,7 +218,7 @@ public class GameManager {
         return currentState.useHint(this);
     }
 
-    /** @return true if an actual change was undone. */
+
     public synchronized boolean undo() {
         return currentState.undo(this);
     }
@@ -239,7 +239,7 @@ public class GameManager {
         }
     }
 
-    /** Called by PlayingState after every command. */
+
     public synchronized void checkWinCondition() {
         if (getGameStatus() != GameStatus.PLAYING || gameBoard == null) return;
 
@@ -250,13 +250,13 @@ public class GameManager {
             endGame(false);
         } else if (gameBoard.getRevealedSafeCount() == safeCells) {
             endGame(true);
-        } else if (minesHit > lastReportedMinesHit) { // Only notify when losing a life
+        } else if (minesHit > lastReportedMinesHit) {  
             lastReportedMinesHit = minesHit;
             fire(GameEvent.LIFE_LOST, "Careful! " + (MAX_MINES_HIT - minesHit) + " lives remaining.");
         }
     }
 
-    /** For States: automatically stops/restarts timer according to the new state. */
+
     public synchronized void transitionTo(IGameState newState) {
         stopTimer();
         this.currentState = newState;
@@ -265,7 +265,7 @@ public class GameManager {
         }
     }
 
-    // ---------- Timer ----------
+
 
     private void startTimer() {
         if (!running) {
@@ -287,12 +287,12 @@ public class GameManager {
         return total / 1_000_000_000L;
     }
 
-    /** For testing: inject a custom clock (in nanoseconds). Should be called when no game is running. */
+
     public synchronized void setClock(LongSupplier nanoClock) {
         if (nanoClock != null) this.clock = nanoClock;
     }
 
-    // ---------- Snapshot ----------
+
 
     public synchronized GameSnapshot getSnapshot() {
         GameStatus status = getGameStatus();
@@ -302,7 +302,7 @@ public class GameManager {
         }
 
         List<String> rows = new ArrayList<>();
-        if (status != GameStatus.PAUSED) { // Hide board if paused
+        if (status != GameStatus.PAUSED) {  
             boolean showMines = status == GameStatus.LOST;
             for (int i = 0; i < size; i++) {
                 StringBuilder sb = new StringBuilder(size);
@@ -329,9 +329,9 @@ public class GameManager {
         return (showMines && c.isMine()) ? '*' : '#';
     }
 
-    // ---------- Observer / Listener ----------
 
-    /** Board observers are automatically re-registered at the start of a new game. */
+
+
     public synchronized void registerBoardObserver(IGameBoardObserver observer) {
         if (observer == null || boardObservers.contains(observer)) return;
         boardObservers.add(observer);
@@ -352,7 +352,7 @@ public class GameManager {
         }
     }
 
-    // ---------- Getters & Setters ----------
+
 
     public synchronized void setHintUsed(boolean used) { this.hintUsed = used; }
     public synchronized boolean isHintUsed() { return hintUsed; }

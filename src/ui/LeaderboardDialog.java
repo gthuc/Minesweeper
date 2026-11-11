@@ -1,4 +1,4 @@
-// File: src/ui/LeaderboardDialog.java
+
 package ui;
 
 import model.DifficultyLevel;

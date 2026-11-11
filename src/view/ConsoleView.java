@@ -7,7 +7,7 @@ import model.GameStatus;
 import observer.BoardEvent;
 import observer.IGameBoardObserver;
 
-/** Giao diện dòng lệnh. Là Observer: bàn cờ đổi thì đánh dấu cần vẽ lại. */
+
 public class ConsoleView implements IGameBoardObserver {
     private boolean dirty;
 
@@ -63,7 +63,7 @@ public class ConsoleView implements IGameBoardObserver {
             return cell.getAdjacentMinesCount() == 0 ? "." : String.valueOf(cell.getAdjacentMinesCount());
         }
         if (cell.isFlagged()) {
-            return (showMines && !cell.isMine()) ? "x" : cell.getFlagSymbol(); // x = cắm cờ sai
+            return (showMines && !cell.isMine()) ? "x" : cell.getFlagSymbol();  
         }
         return (showMines && cell.isMine()) ? cell.getMineSymbol() : "#";
     }

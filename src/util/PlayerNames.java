@@ -5,7 +5,7 @@ public final class PlayerNames {
 
     private PlayerNames() {}
 
-    /** @return tên đã trim; ném IllegalArgumentException nếu rỗng hoặc quá dài. */
+
     public static String normalize(String name) {
         String t = name == null ? "" : name.trim();
         if (t.isEmpty()) throw new IllegalArgumentException("Tên không được để trống.");

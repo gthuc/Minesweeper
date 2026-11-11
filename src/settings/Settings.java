@@ -4,7 +4,7 @@ import model.DifficultyLevel;
 import util.Json;
 import util.PlayerNames;
 
-/** Cài đặt người chơi. Setter tự kiểm tra hợp lệ và ném IllegalArgumentException nếu sai. */
+
 public class Settings {
     private Theme theme = Theme.CLASSIC;
     private String playerName = "Player";

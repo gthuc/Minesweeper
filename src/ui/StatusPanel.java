@@ -20,7 +20,7 @@ public class StatusPanel extends JPanel implements IGameBoardObserver {
         setLayout(new FlowLayout(FlowLayout.CENTER, 40, 5));
 
         mineCountLabel = new JLabel("💣 Mines: --");
-        livesLabel = new JLabel("Lives: ❤️❤️❤️"); // Đã bỏ trái tim thừa phía trước chữ Lives
+        livesLabel = new JLabel("Lives: ❤️❤️❤️");  
         timerLabel = new JLabel("⏱️ Time: 00:00");
 
         add(mineCountLabel);
@@ -60,7 +60,7 @@ public class StatusPanel extends JPanel implements IGameBoardObserver {
                 hearts.append("💔");
             }
 
-            // Đã sửa: Chuỗi hiển thị chuẩn Lives: ❤️❤️❤️
+
             livesLabel.setText("Lives: " + hearts.toString().trim());
         }
     }

@@ -29,16 +29,16 @@ public class LeaderboardManager {
         return instance;
     }
 
-    /** Dùng cho test / tiêm storage: thay singleton bằng bản mới (null = file mặc định). */
+
     public static synchronized void resetInstance(IScoreStorage storage) {
         instance = new LeaderboardManager(storage != null ? storage : new FileScoreStorage());
     }
 
-    /**
-     * Thêm điểm. CUSTOM không được ghi (kích thước khác nhau, không so sánh được).
-     *
-     * @return hạng 1..MAX_ENTRIES của bản ghi vừa thêm, hoặc 0 nếu không được ghi / không lọt top.
-     */
+
+
+
+
+
     public synchronized int addScore(DifficultyLevel level, ScoreRecord record) {
         if (level == null || level == DifficultyLevel.CUSTOM || record == null) return 0;
 
@@ -49,15 +49,15 @@ public class LeaderboardManager {
             scores.remove(scores.size() - 1);
         }
         storage.saveScores(leaderboards);
-        return indexOfIdentity(scores, record) + 1; // -1 + 1 = 0 nếu bị loại khỏi top
+        return indexOfIdentity(scores, record) + 1;  
     }
 
-    /**
-     * Đổi tên người chơi của một bản ghi đã có trong bảng (so khớp theo đối tượng).
-     *
-     * @return bản ghi mới, hoặc null nếu bản ghi không còn trong bảng.
-     * @throws IllegalArgumentException nếu tên rỗng hoặc quá dài.
-     */
+
+
+
+
+
+
     public synchronized ScoreRecord renameScore(DifficultyLevel level, ScoreRecord target, String newName) {
         String name = PlayerNames.normalize(newName);
         List<ScoreRecord> scores = leaderboards.get(level);
@@ -66,7 +66,7 @@ public class LeaderboardManager {
         if (idx < 0) return null;
 
         ScoreRecord renamed = target.withPlayerName(name);
-        scores.set(idx, renamed); // cùng khoá xếp hạng nên thứ tự không đổi
+        scores.set(idx, renamed);  
         storage.saveScores(leaderboards);
         return renamed;
     }
@@ -82,7 +82,7 @@ public class LeaderboardManager {
         storage.saveScores(leaderboards);
     }
 
-    /** Trả về bản sao chỉ đọc, bên ngoài không sửa được dữ liệu nội bộ. */
+
     public synchronized List<ScoreRecord> getTopScores(DifficultyLevel level) {
         List<ScoreRecord> scores = leaderboards.get(level);
         if (scores == null) return Collections.emptyList();

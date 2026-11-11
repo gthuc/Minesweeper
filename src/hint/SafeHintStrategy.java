@@ -6,7 +6,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-/** Chỉ trả về gợi ý CHẮC CHẮN (an toàn / là mìn) suy ra từ các ô số đã lật. */
+
 public class SafeHintStrategy implements IHintStrategy {
 
     @Override
@@ -19,7 +19,7 @@ public class SafeHintStrategy implements IHintStrategy {
         return level2(board, constraints);
     }
 
-    /** Ô số có 0 mìn còn lại -> mọi ô chưa biết đều an toàn; còn lại == số ô -> toàn mìn. */
+
     private HintResult level1(GameBoardModel board, List<Constraint> constraints) {
         for (Constraint c : constraints) {
             if (c.remaining == 0) {
@@ -36,7 +36,7 @@ public class SafeHintStrategy implements IHintStrategy {
         return null;
     }
 
-    /** Quy tắc tập con: nếu A ⊂ B thì số mìn trong (B \ A) = remB - remA. */
+
     private HintResult level2(GameBoardModel board, List<Constraint> constraints) {
         for (Constraint a : constraints) {
             for (Constraint b : constraints) {
@@ -59,7 +59,7 @@ public class SafeHintStrategy implements IHintStrategy {
         return null;
     }
 
-    /** Bỏ qua ô mìn đã được cắm cờ rồi, để gợi ý không lặp lại mãi một ô. */
+
     private HintResult firstUnflaggedMine(GameBoardModel board, Constraint c, Set<Integer> codes) {
         for (int code : codes) {
             if (!board.getCell(c.x(code), c.y(code)).isFlagged()) {

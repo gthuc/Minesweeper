@@ -18,7 +18,7 @@ public class BoardPanel extends JPanel implements IGameBoardObserver {
     private GameManager gameManager;
     private CellButton[][] cellButtons;
 
-    // Font hiển thị Emoji hỗ trợ cả Windows (Segoe UI Emoji) và Mac (Apple Color Emoji)
+
     private static final Font EMOJI_FONT = new Font("Segoe UI Emoji", Font.PLAIN, 16);
     private static final Font TEXT_FONT = new Font("SansSerif", Font.BOLD, 14);
 
@@ -41,7 +41,7 @@ public class BoardPanel extends JPanel implements IGameBoardObserver {
                     for (int c = 0; c < size; c++) {
                         CellButton btn = new CellButton(r, c);
 
-                        // Cấu hình tương thích giao diện cho Windows & macOS
+
                         btn.setOpaque(true);
                         btn.setContentAreaFilled(true);
                         btn.setFocusPainted(false);

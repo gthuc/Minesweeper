@@ -30,7 +30,7 @@ public class RevealCommand implements ICommand {
         return affectedCoords != null && !affectedCoords.isEmpty() && board.undoReveal(affectedCoords);
     }
 
-    /** Trúng mìn là mất mạng vĩnh viễn, không được undo để "lấy lại mạng". */
+
     @Override
     public boolean isUndoable() {
         return !hitMine;

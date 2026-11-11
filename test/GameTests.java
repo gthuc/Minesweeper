@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-/** Chạy: xem README. Không cần JUnit. */
+
 public class GameTests {
     static int passed, failed;
     static Path dir;
@@ -43,7 +43,7 @@ public class GameTests {
         return b;
     }
 
-    /** Cô lập singleton giữa các test: mỗi test dùng file riêng trong thư mục tạm. */
+
     static void freshManagers(String tag) {
         LeaderboardManager.resetInstance(new FileScoreStorage(dir.resolve(tag + "-scores.dat").toString()));
         SettingsManager.resetInstance(new FileSettingsStorage(dir.resolve(tag + "-settings.properties").toString()));
@@ -126,20 +126,20 @@ public class GameTests {
         check(b.getRemainingMines() == 0, "mìn còn lại không bao giờ âm");
     }
 
-    /** Mô phỏng người chơi chỉ làm theo gợi ý, kể cả khi đã nổ mìn / cắm cờ sai. */
+
     static void testHintsAreSound() {
         int violations = 0, hintsChecked = 0;
         for (long seed = 0; seed < 300; seed++) {
             GameBoardModel b = board(16, 40, seed);
             b.revealCell(8, 8);
 
-            if (seed % 2 == 1) { // cố tình nổ một mìn trước
+            if (seed % 2 == 1) {  
                 outer:
                 for (int i = 0; i < 16; i++) for (int j = 0; j < 16; j++) {
                     if (b.getCell(i, j).isMine() && !b.getCell(i, j).isRevealed()) { b.revealCell(i, j); break outer; }
                 }
             }
-            if (seed % 3 == 0) { // cắm cờ sai một ô an toàn
+            if (seed % 3 == 0) {  
                 outer2:
                 for (int i = 0; i < 16; i++) for (int j = 0; j < 16; j++) {
                     CellModel c = b.getCell(i, j);
@@ -170,13 +170,13 @@ public class GameTests {
         check(first != null && first.getType() == HintType.CERTAIN_SAFE, "trước click đầu: gợi ý ô an toàn");
     }
 
-    /** Khi mọi ô chưa lật đều có cờ (nghĩa là có cờ sai) vẫn phải có gợi ý, đánh dấu là ô đang có cờ. */
+
     static void testHintFlaggedCells() {
         boolean tested = false, ok = false;
         for (long seed = 0; seed < 50 && !tested; seed++) {
             GameBoardModel b = board(5, 1, seed);
             b.revealCell(2, 2);
-            if (25 - b.getRevealedSafeCount() != 1) continue; // chỉ còn đúng 1 ô chưa lật (chính là mìn)
+            if (25 - b.getRevealedSafeCount() != 1) continue;  
             for (int i = 0; i < 5; i++) for (int j = 0; j < 5; j++) {
                 if (!b.getCell(i, j).isRevealed()) b.toggleFlag(i, j);
             }
@@ -197,7 +197,7 @@ public class GameTests {
         check(!mine.isUndoable(), "lật trúng mìn -> không undo được");
     }
 
-    /** gỡ cờ ô M rồi lật trúng M: lệnh cờ của M undo không còn tác dụng, phải bị bỏ qua. */
+
     static void testUndoSkipsNoOps() {
         freshManagers("undo");
         GameManager gm = GameManager.getInstance();
@@ -208,7 +208,7 @@ public class GameTests {
         for (int i = 0; i < 9 && mx < 0; i++) for (int j = 0; j < 9; j++) if (b.getCell(i, j).isMine()) { mx = i; my = j; break; }
         gm.toggleFlag(mx, my);
         gm.toggleFlag(mx, my);
-        gm.reveal(mx, my); // trúng mìn
+        gm.reveal(mx, my);  
         boolean undone = gm.undo();
         check(undone && b.getRevealedSafeCount() == 0 && b.getRevealedMineCount() == 1,
                 "undo bỏ qua lệnh vô hiệu, hoàn tác lệnh lật thật sự; mạng đã mất không lấy lại");
@@ -323,7 +323,7 @@ public class GameTests {
         gm.exitToMenu();
         check(gm.getGameStatus() == GameStatus.NOT_STARTED && gm.getGameBoard() == null,
                 "exitToMenu -> NOT_STARTED, không còn bàn cờ");
-        gm.reveal(0, 0); // ở menu: bỏ qua, không lỗi
+        gm.reveal(0, 0);  
         check(gm.getGameBoard() == null, "ở menu thì reveal bị bỏ qua");
 
         gm.startGame(DifficultyLevel.EASY);
@@ -397,7 +397,7 @@ public class GameTests {
         freshManagers("flow");
         GameManager gm = GameManager.getInstance();
 
-        // Thắng + ghi bảng điểm
+
         gm.startGame(DifficultyLevel.EASY);
         check(gm.getGameStatus() == GameStatus.PLAYING, "startGame -> PLAYING");
         GameBoardModel b = gm.getGameBoard();
@@ -421,7 +421,7 @@ public class GameTests {
                 "đổi tên bản ghi vừa thắng");
         check(gm.useHint() == null, "hết ván -> không còn gợi ý");
 
-        // Thua sau 3 mìn; undo không trả lại mạng
+
         gm.startGame(DifficultyLevel.EASY);
         b = gm.getGameBoard();
         gm.handleCellAction(new RevealCommand(b, 4, 4));
@@ -444,7 +444,7 @@ public class GameTests {
         check(threw, "CUSTOM không hợp lệ bị từ chối");
         check(gm.getGameStatus() == GameStatus.LOST, "startGame lỗi không làm hỏng ván hiện tại");
 
-        // CUSTOM thắng không ghi điểm
+
         gm.startGame(DifficultyLevel.CUSTOM, 5, 3);
         GameBoardModel cb = gm.getGameBoard();
         gm.reveal(2, 2);

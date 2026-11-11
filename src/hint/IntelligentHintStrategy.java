@@ -7,14 +7,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Khi không còn gợi ý chắc chắn: ước lượng xác suất có mìn của từng ô chưa lật
- * và đề xuất ô ít rủi ro nhất.
- *  - Ô nằm cạnh ô số: trung bình (mìn còn lại / số ô chưa biết) của các ô số kề nó.
- *  - Ô không kề ô số nào: mật độ mìn trung bình của phần bàn cờ chưa lật.
- * Ưu tiên ô chưa cắm cờ; chỉ khi MỌI ô chưa lật đều đã cắm cờ (nghĩa là có cờ sai)
- * mới gợi ý một ô đang có cờ.
- */
+
+
+
+
+
+
+
+
 public class IntelligentHintStrategy implements IHintStrategy {
 
     @Override
@@ -22,7 +22,7 @@ public class IntelligentHintStrategy implements IHintStrategy {
         int size = board.getSize();
         List<Constraint> constraints = Constraint.build(board);
 
-        Map<Integer, double[]> sums = new HashMap<>(); // code -> {tổng xác suất, số ràng buộc}
+        Map<Integer, double[]> sums = new HashMap<>();  
         for (Constraint c : constraints) {
             double p = (double) c.remaining / c.cells.size();
             for (int code : c.cells) {
