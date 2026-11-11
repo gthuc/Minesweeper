@@ -10,12 +10,12 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Maintains at most ten ranked records per preset difficulty.
+ * Maintains at most twenty ranked records per preset difficulty.
  * Custom games are excluded. Records are located by object identity when renamed
  * or when determining whether a newly added entry survived trimming.
  */
 public class LeaderboardManager {
-    public static final int MAX_ENTRIES = 10;
+    public static final int MAX_ENTRIES = 20;
     private static LeaderboardManager instance;
 
     private final IScoreStorage storage;
@@ -43,7 +43,7 @@ public class LeaderboardManager {
 
     /**
      * Sorts and trims a preset leaderboard, then requests persistence.
-     * @return the retained one-based rank, or zero if excluded or outside the top ten
+     * @return the retained one-based rank, or zero if excluded or outside the entry limit
      */
     public synchronized int addScore(DifficultyLevel level, ScoreRecord record) {
         if (level == null || level == DifficultyLevel.CUSTOM || record == null) return 0;

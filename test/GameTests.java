@@ -374,12 +374,12 @@ public class GameTests {
         LeaderboardManager.resetInstance(new FileScoreStorage(f.toString()));
         LeaderboardManager lb = LeaderboardManager.getInstance();
 
-        for (int i = 0; i < 12; i++) lb.addScore(DifficultyLevel.MEDIUM, new ScoreRecord("p" + i, 100 + i, 0, false));
-        check(lb.getTopScores(DifficultyLevel.MEDIUM).size() == 10
+        for (int i = 0; i < LeaderboardManager.MAX_ENTRIES + 2; i++) lb.addScore(DifficultyLevel.MEDIUM, new ScoreRecord("p" + i, 100 + i, 0, false));
+        check(lb.getTopScores(DifficultyLevel.MEDIUM).size() == LeaderboardManager.MAX_ENTRIES
                         && lb.getTopScores(DifficultyLevel.MEDIUM).get(0).getTimeInSeconds() == 100,
-                "leaderboard keeps at most 10 entries in the correct order");
+                "leaderboard keeps its entry limit in the correct order");
         check(lb.addScore(DifficultyLevel.MEDIUM, new ScoreRecord("fast", 50, 0, false)) == 1, "addScore returns rank 1 for the top score");
-        check(lb.addScore(DifficultyLevel.MEDIUM, new ScoreRecord("slow", 999, 2, false)) == 0, "scores outside the top 10 return rank 0");
+        check(lb.addScore(DifficultyLevel.MEDIUM, new ScoreRecord("slow", 999, 2, false)) == 0, "scores outside the entry limit return rank 0");
         check(lb.addScore(DifficultyLevel.CUSTOM, new ScoreRecord("c", 1, 0, false)) == 0
                 && lb.getTopScores(DifficultyLevel.CUSTOM).isEmpty(), "CUSTOM scores are not recorded");
 
