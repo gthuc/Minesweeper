@@ -21,7 +21,7 @@ production/
 *.tar.gz
 *.rar
 
-# Maven / Gradle (nếu có)
+# Maven / Gradle
 target/
 build/
 .gradle/
@@ -29,3 +29,4 @@ build/
 # OS files
 .DS_Store
 Thumbs.db
+*.properties
